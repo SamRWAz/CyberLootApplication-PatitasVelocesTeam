@@ -18,44 +18,6 @@ develop: The development branch. All new features are merged here before being d
 
 Feature Branches (feature-): Every new feature must be developed on a separate branch, with the format feature/feature-name. For example: feature/user-profile or feature/product-search.
 
-Code of Conduct for Developers
-
-This document establishes the norms and practices to be followed to ensure efficient and collaborative development.
-
-1. Commit Convention
-To maintain a clear and readable commit history, we'll use a standardized convention. Each commit message must begin with a prefix that describes the type of change, followed by a concise description.
-
-feat: A new feature (e.g., feat: add keyword-based search functionality).
-
-fix: A bug fix (e.g., fix: correct bug in product image upload).
-
-docs: Documentation changes (e.g., docs: update README with installation instructions).
-
-style: Changes that don't affect code logic (formatting, white space, semicolons).
-
-refactor: Code refactoring without changing functionality.
-
-chore: Maintenance tasks, no changes to production code.
-
-2. Branching Model
-We will use a simplified Git Flow branching model.
-
-main: The main branch. It must always contain stable, production-ready code. Do not commit directly to this branch.
-
-develop: The development branch. All new features are merged here before being deployed to main.
-
-Feature Branches (feature-): Every new feature must be developed on a separate branch, with the format feature/feature-name. For example: feature/user-profile or feature/product-search.
-
-Process:
-
-Create a new branch from develop: git checkout -b feature/feature-name.
-
-Work on your branch and make commits using the established convention.
-
-When the feature is complete, create a Pull Request (PR) to the develop branch.
-
-The PR must be reviewed and approved by at least one other team member before being merged.
-
 3. Technologies and Libraries
 To maintain consistency and avoid fragmentation, we will only use the following approved technologies and libraries.
 
