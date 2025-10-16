@@ -1,0 +1,33 @@
+.category-bar {
+  background: linear-gradient(90deg, #65BEE3 0%, #9D9DCC 100%);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.category-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #ffffff;
+  color: #1D1D1B;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.category-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: brightness(0);
+}
+
+.category-btn:hover {
+  background-color: #f0f0f0;
+}
+

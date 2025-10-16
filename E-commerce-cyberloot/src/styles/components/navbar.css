@@ -1,0 +1,102 @@
+.navbar {
+  background-color: #1D1D1B;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.navbar-logo h2 {
+  color: #fff;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+}
+
+.navbar-search {
+  flex: 1;
+  max-width: 500px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #3a3a3a;
+  color: #fff;
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.search-input:focus {
+  outline: 2px solid #4a9eff;
+}
+
+.navbar-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-login,
+.btn-signin {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-login {
+  background-color: #65BEE3;
+  color: #000;
+  border: none;
+}
+
+.btn-login:hover {
+  background-color: #55aed3;
+}
+
+.btn-signin {
+  background-color: #9D9DCC;
+  color: #000;
+}
+
+.btn-signin:hover {
+  background-color: #8d8dbc;
+}
+
