@@ -9,14 +9,13 @@
 .main {
   width: 100%;
   display: block;
-  padding: 2rem 0;
+  padding: 1rem 0;
   background-color: #ffffff;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 

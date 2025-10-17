@@ -1,12 +1,11 @@
 .category-bar {
   background: linear-gradient(90deg, #65BEE3 0%, #9D9DCC 100%);
   padding: 1.5rem 2.5rem;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(120px, 1fr);
-  justify-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: start;
-  gap: 0.75rem;
+  gap: 4rem;
 }
 
 .category-item {
@@ -44,5 +43,48 @@
 .category-label {
   color: #1D1D1B;
   font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .category-bar {
+    padding: 1rem 1rem;
+    gap: 0.8rem;
+  }
+  
+  .category-icon-btn {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .category-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .category-label {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-bar {
+    padding: 0.8rem 0.5rem;
+    gap: 0.6rem;
+  }
+  
+  .category-icon-btn {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .category-icon {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .category-label {
+    font-size: 0.75rem;
+  }
 }
 

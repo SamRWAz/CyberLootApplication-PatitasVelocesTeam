@@ -5,9 +5,8 @@ type Product = {
   title: string
   description: string
   price: number
-  category: string
-  condition: ProductCondition
   image: string
+  seller: string
 }
 
 const products: Product[] = [
@@ -16,36 +15,24 @@ const products: Product[] = [
     title: 'Wireless Headphones Pro X',
     description: 'Immersive sound, noise cancellation, and long-lasting battery.',
     price: 89.99,
-    category: 'Audio',
-    condition: 'new',
-    image: 'https://picsum.photos/seed/audio-auriculares/800/600'
+    image: 'https://picsum.photos/seed/audio-auriculares/800/600',
+    seller: 'Brian Moser'
   },
   {
     id: 'p-2',
     title: 'Retro Mini Console',
     description: 'Relive classics with HDMI output and 2 controllers included.',
     price: 129.5,
-    category: 'Consoles',
-    condition: 'refurbished',
-    image: 'https://picsum.photos/seed/consola-retro/800/600'
+    image: 'https://picsum.photos/seed/consola-retro/800/600',
+    seller: 'Dexter Morgan'
   },
   {
     id: 'p-3',
     title: 'PC Gamer Upgrade Kit',
     description: 'Memory, NVMe SSD, and RGB cooling pack to boost your rig.',
     price: 159.0,
-    category: 'Components',
-    condition: 'new',
-    image: 'https://picsum.photos/seed/pc-upgrade/800/600'
-  },
-  {
-    id: 'p-4',
-    title: 'Video Game Deluxe Edition',
-    description: 'Includes extra content and digital soundtrack.',
-    price: 59.99,
-    category: 'Video games',
-    condition: 'used',
-    image: 'https://picsum.photos/seed/videojuego-deluxe/800/600'
+    image: 'https://picsum.photos/seed/pc-upgrade/800/600',
+    seller: 'Debra Morgan'
   }
 ]
 
@@ -65,14 +52,29 @@ function ProductList() {
         }}
       >
         {products.map((product) => (
-          <article
+          <button
             key={product.id}
+            onClick={() => console.log(`Clicked product: ${product.id}`)}
             style={{
               border: '1px solid #2a2a2a',
-              borderRadius: 12,
+              borderRadius: 0,
               background: '#1D1D1B',
               overflow: 'hidden',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.25)'
+              boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              textAlign: 'left',
+              width: '100%',
+              padding: 0,
+              position: 'relative'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)'
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.35)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)'
             }}
           >
             <div style={{ position: 'relative', paddingTop: '56%' }}>
@@ -87,6 +89,44 @@ function ProductList() {
                   objectFit: 'cover'
                 }}
               />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  console.log(`Added to favorites: ${product.id}`)
+                }}
+                style={{
+                  position: 'absolute',
+                  bottom: '8px',
+                  right: '8px',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  backdropFilter: 'blur(4px)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(220, 38, 38, 0.8)'
+                  e.currentTarget.style.transform = 'scale(1.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.6)'
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+              >
+                <span style={{ 
+                  color: '#ffffff', 
+                  fontSize: '16px',
+                  userSelect: 'none'
+                }}>
+                  ♥
+                </span>
+              </button>
             </div>
 
             <div style={{ padding: '16px 16px 12px' }}>
@@ -96,16 +136,22 @@ function ProductList() {
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <span style={{ fontWeight: 700, color: '#ffffff' }}>{formatPrice(product.price)}</span>
-                <span style={{ color: '#d1d5db' }}>|</span>
-                <span style={{ color: '#d1d5db' }}>{product.category}</span>
-                <span style={{ color: '#d1d5db' }}>
-                  {product.condition === 'new' && 'New'}
-                  {product.condition === 'used' && 'Used'}
-                  {product.condition === 'refurbished' && 'Refurbished'}
+              </div>
+              <div style={{ 
+                borderTop: '1px solid #2a2a2a', 
+                paddingTop: '8px',
+                marginTop: '8px'
+              }}>
+                <span style={{ 
+                  color: '#9ca3af', 
+                  fontSize: '0.85rem',
+                  fontStyle: 'italic'
+                }}>
+                  Vendido por: {product.seller}
                 </span>
               </div>
             </div>
-          </article>
+          </button>
         ))}
       </div>
     </section>
