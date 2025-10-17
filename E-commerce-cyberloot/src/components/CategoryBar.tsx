@@ -8,26 +8,36 @@ import componentsIcon from '../assets/Components.png'
 function CategoryBar(){
     return (
         <div className="category-bar">
-            <button className="category-btn">
-                <img src={videogamesIcon} alt="Videogames" className="category-icon" />
-                Videogames
-            </button>
-            <button className="category-btn">
-                <img src={consolesIcon} alt="Consoles" className="category-icon" />
-                Consoles
-            </button>
-            <button className="category-btn">
-                <img src={accessoriesIcon} alt="Accesories" className="category-icon" />
-                Accesories
-            </button>
-            <button className="category-btn">
-                <img src={merchandisingIcon} alt="Merchandising" className="category-icon" />
-                Merchandising
-            </button>
-            <button className="category-btn">
-                <img src={componentsIcon} alt="Components" className="category-icon" />
-                Components
-            </button>
+            <div className="category-item">
+                <button className="category-icon-btn" aria-label="Videogames">
+                    <img src={videogamesIcon} alt="" className="category-icon" />
+                </button>
+                <span className="category-label">Videogames</span>
+            </div>
+            <div className="category-item">
+                <button className="category-icon-btn" aria-label="Consoles">
+                    <img src={consolesIcon} alt="" className="category-icon" />
+                </button>
+                <span className="category-label">Consoles</span>
+            </div>
+            <div className="category-item">
+                <button className="category-icon-btn" aria-label="Accesories">
+                    <img src={accessoriesIcon} alt="" className="category-icon" />
+                </button>
+                <span className="category-label">Accesories</span>
+            </div>
+            <div className="category-item">
+                <button className="category-icon-btn" aria-label="Merchandising">
+                    <img src={merchandisingIcon} alt="" className="category-icon" />
+                </button>
+                <span className="category-label">Merchandising</span>
+            </div>
+            <div className="category-item">
+                <button className="category-icon-btn" aria-label="Components">
+                    <img src={componentsIcon} alt="" className="category-icon" />
+                </button>
+                <span className="category-label">Components</span>
+            </div>
         </div>
     )
 }
