@@ -1,22 +1,24 @@
 type ProductCondition = 'new' | 'used' | 'refurbished'
 
-type Product = {
+export type Product = {
   id: string
   title: string
   description: string
   price: number
   image: string
   seller: string
+  category: 'videogames' | 'consoles' | 'accesories' | 'merchandising' | 'components'
 }
 
-const products: Product[] = [
+export const products: Product[] = [
   {
     id: 'p-1',
     title: 'Wireless Headphones Pro X',
     description: 'Immersive sound, noise cancellation, and long-lasting battery.',
     price: 89.99,
     image: 'https://picsum.photos/seed/audio-auriculares/800/600',
-    seller: 'Brian Moser'
+    seller: 'Brian Moser',
+    category: 'accesories'
   },
   {
     id: 'p-2',
@@ -24,7 +26,8 @@ const products: Product[] = [
     description: 'Relive classics with HDMI output and 2 controllers included.',
     price: 129.5,
     image: 'https://picsum.photos/seed/consola-retro/800/600',
-    seller: 'Dexter Morgan'
+    seller: 'Dexter Morgan',
+    category: 'consoles'
   },
   {
     id: 'p-3',
@@ -32,7 +35,98 @@ const products: Product[] = [
     description: 'Memory, NVMe SSD, and RGB cooling pack to boost your rig.',
     price: 159.0,
     image: 'https://picsum.photos/seed/pc-upgrade/800/600',
-    seller: 'Debra Morgan'
+    seller: 'Debra Morgan',
+    category: 'components'
+  },
+  {
+    id: 'p-4',
+    title: 'Cyberpunk 2077 - Collector\'s Edition',
+    description: 'Complete edition with steelbook, artbook, and exclusive figurine.',
+    price: 149.99,
+    image: 'https://picsum.photos/seed/cyberpunk-game/800/600',
+    seller: 'Rita Bennett',
+    category: 'videogames'
+  },
+  {
+    id: 'p-5',
+    title: 'PlayStation 5 Console',
+    description: 'Next-gen gaming console with 4K gaming and ray tracing support.',
+    price: 499.99,
+    image: 'https://picsum.photos/seed/ps5-console/800/600',
+    seller: 'James Doakes',
+    category: 'consoles'
+  },
+  {
+    id: 'p-6',
+    title: 'Gaming Mechanical Keyboard RGB',
+    description: 'Mechanical switches, customizable RGB lighting, and wrist rest included.',
+    price: 129.99,
+    image: 'https://picsum.photos/seed/keyboard-gaming/800/600',
+    seller: 'Maria LaGuerta',
+    category: 'accesories'
+  },
+  {
+    id: 'p-7',
+    title: 'Official Gaming T-Shirt Collection',
+    description: 'Premium cotton t-shirts with your favorite game characters.',
+    price: 29.99,
+    image: 'https://picsum.photos/seed/gaming-tshirt/800/600',
+    seller: 'Angel Batista',
+    category: 'merchandising'
+  },
+  {
+    id: 'p-8',
+    title: 'NVIDIA RTX 4080 Graphics Card',
+    description: 'High-performance GPU with 16GB VRAM for 4K gaming and streaming.',
+    price: 1199.99,
+    image: 'https://picsum.photos/seed/rtx4080/800/600',
+    seller: 'Vince Masuka',
+    category: 'components'
+  },
+  {
+    id: 'p-9',
+    title: 'The Legend of Zelda: Tears of the Kingdom',
+    description: 'Latest adventure in the Zelda series for Nintendo Switch.',
+    price: 59.99,
+    image: 'https://picsum.photos/seed/zelda-game/800/600',
+    seller: 'Lila Tournay',
+    category: 'videogames'
+  },
+  {
+    id: 'p-10',
+    title: 'Xbox Series X Controller',
+    description: 'Wireless controller with textured grips and improved ergonomics.',
+    price: 69.99,
+    image: 'https://picsum.photos/seed/xbox-controller/800/600',
+    seller: 'Paul Bennett',
+    category: 'accesories'
+  },
+  {
+    id: 'p-11',
+    title: 'Gaming Mouse Pad XL',
+    description: 'Large RGB mouse pad with smooth surface and customizable lighting.',
+    price: 39.99,
+    image: 'https://picsum.photos/seed/mousepad/800/600',
+    seller: 'Frank Lundy',
+    category: 'accesories'
+  },
+  {
+    id: 'p-12',
+    title: 'Elden Ring - Deluxe Edition',
+    description: 'Action RPG masterpiece with exclusive digital content and soundtrack.',
+    price: 79.99,
+    image: 'https://picsum.photos/seed/elden-ring/800/600',
+    seller: 'Miguel Prado',
+    category: 'videogames'
+  },
+  {
+    id: 'p-13',
+    title: 'Nintendo Switch OLED Model',
+    description: 'Enhanced Switch with vibrant OLED screen and improved audio.',
+    price: 349.99,
+    image: 'https://picsum.photos/seed/switch-oled/800/600',
+    seller: 'Anton Briggs',
+    category: 'consoles'
   }
 ]
 
@@ -40,10 +134,30 @@ function formatPrice(value: number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(value)
 }
 
-function ProductList() {
+interface ProductListProps {
+  category?: 'videogames' | 'consoles' | 'accesories' | 'merchandising' | 'components'
+  title?: string
+}
+
+function ProductList({ category, title = 'Featured products' }: ProductListProps) {
+  const filteredProducts = category 
+    ? products.filter(product => product.category === category)
+    : products
+
+  if (filteredProducts.length === 0) {
+    return (
+      <section className="container" style={{ padding: '2rem 0' }}>
+        <h2 style={{ marginBottom: '1rem' }}>{title}</h2>
+        <p style={{ color: '#d1d5db', textAlign: 'center', padding: '2rem' }}>
+          No hay productos disponibles en esta categoría.
+        </p>
+      </section>
+    )
+  }
+
   return (
     <section className="container" style={{ padding: '2rem 0' }}>
-      <h2 style={{ marginBottom: '1rem' }}>Featured products</h2>
+      <h2 style={{ marginBottom: '1rem' }}>{title}</h2>
       <div
         style={{
           display: 'grid',
@@ -51,7 +165,7 @@ function ProductList() {
           gap: '24px'
         }}
       >
-        {products.map((product) => (
+        {filteredProducts.map((product) => (
           <button
             key={product.id}
             onClick={() => console.log(`Clicked product: ${product.id}`)}

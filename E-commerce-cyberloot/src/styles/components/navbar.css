@@ -72,7 +72,7 @@
 }
 
 .btn-login,
-.btn-signin {
+.btn-signup {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
@@ -91,12 +91,12 @@
   background-color: #4a98b9;
 }
 
-.btn-signin {
+.btn-signup {
   background-color: #9D9DCC;
   color: #000;
 }
 
-.btn-signin:hover {
+.btn-signup:hover {
   background-color: #71719a;
 }
 

@@ -1,6 +1,7 @@
 import '../styles/pages/login.css'
 import loginImage from '../assets/LogIn.jpeg'
 import logo from '../assets/LogoEc.png'
+import { Link } from 'react-router-dom'
 
 function Login() {
   return (
@@ -21,6 +22,9 @@ function Login() {
               <input type="password" id="password" placeholder="Enter your password" />
             </div>
             <button type="submit" className="btn-submit">Log In</button>
+            <p className="login-signup-link">
+              Don't have an account? <Link to="/signup">Sign up</Link>
+            </p>
           </form>
         </div>
         <div className="login-image">

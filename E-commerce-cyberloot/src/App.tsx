@@ -5,6 +5,12 @@ import FeatureBar from './components/FeatureBar'
 import ProductList from './components/ProductList'
 import NoveltyGallery from './components/NoveltyGallery'
 import Login from './pages/Login'
+import SignUp from './pages/SignUp'
+import Videogames from './pages/Videogames'
+import Consoles from './pages/Consoles'
+import Accesories from './pages/Accesories'
+import Merchandising from './pages/Merchandising'
+import Components from './pages/Components'
 import './App.css'
 
 function App() {
@@ -27,6 +33,12 @@ function App() {
           </>
         } />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/videogames" element={<Videogames />} />
+        <Route path="/consoles" element={<Consoles />} />
+        <Route path="/accesories" element={<Accesories />} />
+        <Route path="/merchandising" element={<Merchandising />} />
+        <Route path="/components" element={<Components />} />
       </Routes>
     </BrowserRouter>
   )
