@@ -13,6 +13,15 @@ function Profile() {
   const [userProducts, setUserProducts] = useState<Product[]>([])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [productEditForm, setProductEditForm] = useState({
+    title: '',
+    description: '',
+    price: '',
+    image: '',
+    category: 'videogames' as Product['category'],
+    condition: 'new' as Product['condition']
+  })
   const [editFormData, setEditFormData] = useState({
     fullName: '',
     email: '',
@@ -49,6 +58,14 @@ function Profile() {
       setUserProducts(products)
     }
   }, [navigate])
+
+  // Recargar productos cuando se editen
+  useEffect(() => {
+    if (user && !editingProduct) {
+      const products = getProductsBySellerId(user.id)
+      setUserProducts(products)
+    }
+  }, [user, editingProduct])
 
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
@@ -137,18 +154,59 @@ function Profile() {
   }
 
   const handleEditProduct = (product: Product) => {
-    const newTitle = window.prompt('Nuevo título', product.title) ?? product.title
-    const newPriceStr = window.prompt('Nuevo precio', String(product.price)) ?? String(product.price)
-    const newImage = window.prompt('Nueva URL de imagen', product.image) ?? product.image
-    const newDescription = window.prompt('Nueva descripción', product.description) ?? product.description
-    const newPrice = parseFloat(newPriceStr)
+    setEditingProduct(product)
+    setProductEditForm({
+      title: product.title,
+      description: product.description,
+      price: String(product.price),
+      image: product.image,
+      category: product.category,
+      condition: product.condition
+    })
+  }
+
+  const handleProductEditCancel = () => {
+    setEditingProduct(null)
+    setProductEditForm({
+      title: '',
+      description: '',
+      price: '',
+      image: '',
+      category: 'videogames',
+      condition: 'new'
+    })
+  }
+
+  const handleProductEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setProductEditForm(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleProductEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingProduct) return
+
+    const newPrice = parseFloat(productEditForm.price)
     if (!isFinite(newPrice) || newPrice <= 0) {
       alert('Precio inválido')
       return
     }
-    const updated: Product = { ...product, title: newTitle, price: newPrice, image: newImage, description: newDescription }
+
+    const updated: Product = {
+      ...editingProduct,
+      title: productEditForm.title,
+      price: newPrice,
+      image: productEditForm.image,
+      description: productEditForm.description,
+      category: productEditForm.category,
+      condition: productEditForm.condition
+    }
     updateProductInStorage(updated)
     setUserProducts(prev => prev.map(p => p.id === updated.id ? updated : p))
+    handleProductEditCancel()
   }
 
   const handleDeleteProduct = (product: Product) => {
@@ -287,7 +345,7 @@ function Profile() {
                   className="btn-add-product"
                   onClick={() => navigate('/favorites')}
                 >
-                  Ver favoritos
+                  View Favorites
                 </button>
                 <button 
                   className="btn-logout"
@@ -356,8 +414,8 @@ function Profile() {
                         <span className="product-category">{product.category}</span>
                         {product.sellerId === user.id && (
                           <div style={{ display: 'flex', gap: 8, marginTop: 10 }} onClick={(e) => e.stopPropagation()}>
-                            <button className="btn-cancel" onClick={() => handleEditProduct(product)}>Editar</button>
-                            <button className="btn-delete-account" onClick={() => handleDeleteProduct(product)}>Eliminar</button>
+                            <button className="btn-cancel" onClick={() => handleEditProduct(product)}>Edit</button>
+                            <button className="btn-delete-account" onClick={() => handleDeleteProduct(product)}>Delete</button>
                           </div>
                         )}
                       </div>
@@ -369,6 +427,105 @@ function Profile() {
           </main>
         </div>
       </div>
+
+      {/* Modal de edición de producto */}
+      {editingProduct && (
+        <div className="modal-overlay" onClick={handleProductEditCancel}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Product</h2>
+              <button className="modal-close" onClick={handleProductEditCancel}>×</button>
+            </div>
+            <form className="product-edit-form" onSubmit={handleProductEditSubmit}>
+              <div className="form-group">
+                <label htmlFor="product-title">Title *</label>
+                <input
+                  type="text"
+                  id="product-title"
+                  name="title"
+                  value={productEditForm.title}
+                  onChange={handleProductEditChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="product-description">Description *</label>
+                <textarea
+                  id="product-description"
+                  name="description"
+                  value={productEditForm.description}
+                  onChange={handleProductEditChange}
+                  rows={4}
+                  required
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="product-price">Price (USD) *</label>
+                  <input
+                    type="number"
+                    id="product-price"
+                    name="price"
+                    value={productEditForm.price}
+                    onChange={handleProductEditChange}
+                    step="0.01"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="product-category">Category *</label>
+                  <select
+                    id="product-category"
+                    name="category"
+                    value={productEditForm.category}
+                    onChange={handleProductEditChange}
+                    required
+                  >
+                    <option value="videogames">Videogames</option>
+                    <option value="consoles">Consoles</option>
+                    <option value="accesories">Accessories</option>
+                    <option value="merchandising">Merchandising</option>
+                    <option value="components">Components</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="product-condition">Condition *</label>
+                  <select
+                    id="product-condition"
+                    name="condition"
+                    value={productEditForm.condition}
+                    onChange={handleProductEditChange}
+                    required
+                  >
+                    <option value="new">New</option>
+                    <option value="used">Used</option>
+                    <option value="refurbished">Refurbished</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="product-image">Image URL *</label>
+                <input
+                  type="url"
+                  id="product-image"
+                  name="image"
+                  value={productEditForm.image}
+                  onChange={handleProductEditChange}
+                  placeholder="https://example.com/image.jpg"
+                  required
+                />
+              </div>
+              <div className="modal-buttons">
+                <button type="submit" className="btn-save">Save Changes</button>
+                <button type="button" className="btn-cancel" onClick={handleProductEditCancel}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

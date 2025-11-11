@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { getFavorites } from '../models/User'
-import { getProductById } from '../models/Product'
+import { getProductById, getProductsFromStorage } from '../models/Product'
 import type { Product } from '../models/Product'
+import { products as predefinedProducts } from '../components/ProductList'
 
 function Favorites() {
   const navigate = useNavigate()
@@ -10,16 +11,55 @@ function Favorites() {
   const [favProducts, setFavProducts] = useState<Product[]>([])
 
   useEffect(() => {
-    const currentUserJson = localStorage.getItem('cyberloot_current_user')
-    if (!currentUserJson) {
-      navigate('/login')
-      return
+    const loadFavorites = () => {
+      const currentUserJson = localStorage.getItem('cyberloot_current_user')
+      if (!currentUserJson) {
+        navigate('/login')
+        return
+      }
+      const currentUser = JSON.parse(currentUserJson) as { id: string }
+      setUserId(currentUser.id)
+      
+      const favIds = getFavorites(currentUser.id)
+      
+      // Combinar productos de localStorage y productos predefinidos
+      const storedProducts = getProductsFromStorage()
+      const allProducts = [...predefinedProducts, ...storedProducts].reduce<Product[]>((acc, p) => {
+        if (!acc.find(x => x.id === p.id)) acc.push(p)
+        return acc
+      }, [])
+      
+      // Buscar productos favoritos en ambos lugares
+      const products = favIds
+        .map(id => {
+          // Buscar primero en productos predefinidos
+          const predefined = predefinedProducts.find(p => p.id === id)
+          if (predefined) return predefined
+          
+          // Si no está en predefinidos, buscar en localStorage
+          return getProductById(id)
+        })
+        .filter(Boolean) as Product[]
+      
+      setFavProducts(products)
     }
-    const currentUser = JSON.parse(currentUserJson) as { id: string }
-    setUserId(currentUser.id)
-    const favIds = getFavorites(currentUser.id)
-    const products = favIds.map(id => getProductById(id)).filter(Boolean) as Product[]
-    setFavProducts(products)
+
+    loadFavorites()
+
+    // Escuchar cambios en localStorage para actualizar favoritos
+    const handleStorageChange = () => {
+      loadFavorites()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    
+    // Verificar periódicamente (por si el cambio fue en la misma pestaña)
+    const interval = setInterval(loadFavorites, 1000)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(interval)
+    }
   }, [navigate])
 
   if (userId === null) return null

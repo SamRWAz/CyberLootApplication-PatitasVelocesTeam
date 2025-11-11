@@ -144,19 +144,51 @@ function formatPrice(value: number) {
 interface ProductListProps {
   category?: 'videogames' | 'consoles' | 'accesories' | 'merchandising' | 'components'
   title?: string
+  searchQuery?: string
+  conditionFilter?: 'new' | 'used' | 'refurbished'
+  priceRange?: '' | '0-50' | '50-100' | '100-200' | '200+'
+  sortBy?: 'relevance' | 'price-low' | 'price-high' | 'newest' | 'oldest'
 }
 
-function ProductList({ category, title = 'Featured products' }: ProductListProps) {
+function ProductList({ category, title = 'Featured products', searchQuery, conditionFilter, priceRange, sortBy }: ProductListProps) {
   const navigate = useNavigate()
   const [favoriteIds, setFavoriteIds] = useState<string[]>([])
 
   useEffect(() => {
-    const currentUserJson = localStorage.getItem('cyberloot_current_user')
-    if (currentUserJson) {
-      const currentUser = JSON.parse(currentUserJson) as { id: string }
-      setFavoriteIds(getFavorites(currentUser.id))
-    } else {
-      setFavoriteIds([])
+    const loadFavorites = () => {
+      const currentUserJson = localStorage.getItem('cyberloot_current_user')
+      if (currentUserJson) {
+        try {
+          const currentUser = JSON.parse(currentUserJson) as { id: string }
+          if (currentUser.id) {
+            setFavoriteIds(getFavorites(currentUser.id))
+          }
+        } catch (e) {
+          console.error('Error loading favorites:', e)
+          setFavoriteIds([])
+        }
+      } else {
+        setFavoriteIds([])
+      }
+    }
+
+    loadFavorites()
+
+    // Escuchar cambios en localStorage para actualizar favoritos
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.startsWith('cyberloot_favorites_')) {
+        loadFavorites()
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    
+    // Verificar periódicamente (por si el cambio fue en la misma pestaña)
+    const interval = setInterval(loadFavorites, 1000)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(interval)
     }
   }, [])
   const storedProducts = getProductsFromStorage()
@@ -165,9 +197,30 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
     return acc
   }, [])
 
-  const filteredProducts = category 
-    ? combined.filter(product => product.category === category)
-    : combined
+  let filteredProducts = combined
+  if (category) {
+    filteredProducts = filteredProducts.filter(product => product.category === category)
+  }
+  if (searchQuery && searchQuery.trim().length > 0) {
+    const q = searchQuery.trim().toLowerCase()
+    filteredProducts = filteredProducts.filter(p => 
+      p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
+    )
+  }
+  if (conditionFilter) {
+    filteredProducts = filteredProducts.filter(p => p.condition === conditionFilter)
+  }
+  if (priceRange) {
+    if (priceRange === '0-50') filteredProducts = filteredProducts.filter(p => p.price >= 0 && p.price < 50)
+    if (priceRange === '50-100') filteredProducts = filteredProducts.filter(p => p.price >= 50 && p.price < 100)
+    if (priceRange === '100-200') filteredProducts = filteredProducts.filter(p => p.price >= 100 && p.price < 200)
+    if (priceRange === '200+') filteredProducts = filteredProducts.filter(p => p.price >= 200)
+  }
+  if (sortBy === 'price-low') {
+    filteredProducts = [...filteredProducts].sort((a, b) => a.price - b.price)
+  } else if (sortBy === 'price-high') {
+    filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price)
+  }
 
   if (filteredProducts.length === 0) {
     return (
@@ -194,6 +247,16 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
           <Link
             key={product.id}
             to={`/product/${product.id}`}
+            onClick={(e) => {
+              // Si el clic fue en el botón de favoritos o en su contenido, no navegar
+              const target = e.target as HTMLElement
+              const favoriteButton = target.closest('button[aria-label="Favorito"]')
+              if (favoriteButton) {
+                e.preventDefault()
+                e.stopPropagation()
+                return false
+              }
+            }}
             style={{
               border: '1px solid #2a2a2a',
               borderRadius: 0,
@@ -231,18 +294,50 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
                 }}
               />
               <button
+                type="button"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
+                  
                   const currentUserJson = localStorage.getItem('cyberloot_current_user')
                   if (!currentUserJson) {
-                    alert('Inicia sesión para gestionar favoritos')
+                    alert('Please log in to manage favorites')
                     navigate('/login')
                     return
                   }
-                  const currentUser = JSON.parse(currentUserJson) as { id: string }
-                  const next = toggleFavorite(currentUser.id, product.id)
-                  setFavoriteIds(next)
+                  
+                  try {
+                    const currentUser = JSON.parse(currentUserJson) as { id: string }
+                    if (!currentUser || !currentUser.id) {
+                      alert('User session invalid. Please log in again.')
+                      navigate('/login')
+                      return
+                    }
+                    
+                    console.log('Toggling favorite for product:', product.id, 'User:', currentUser.id)
+                    const next = toggleFavorite(currentUser.id, product.id)
+                    console.log('New favorites:', next)
+                    setFavoriteIds([...next]) // Crear nueva array para forzar re-render
+                    
+                    // Forzar actualización inmediata
+                    setTimeout(() => {
+                      const updated = getFavorites(currentUser.id)
+                      setFavoriteIds([...updated])
+                    }, 100)
+                  } catch (error) {
+                    console.error('Error toggling favorite:', error)
+                    alert('Error managing favorites. Please try again.')
+                  }
+                  
+                  return false
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }}
+                onMouseUp={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
                 }}
                 aria-label="Favorito"
                 style={{
@@ -259,13 +354,15 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
                   justifyContent: 'center',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  backdropFilter: 'blur(4px)'
+                  backdropFilter: 'blur(4px)',
+                  zIndex: 10
                 }}
               >
                 <span style={{ 
                   color: '#ffffff', 
                   fontSize: '16px',
-                  userSelect: 'none'
+                  userSelect: 'none',
+                  pointerEvents: 'none'
                 }}>
                   {favoriteIds.includes(product.id) ? '❤' : '♡'}
                 </span>

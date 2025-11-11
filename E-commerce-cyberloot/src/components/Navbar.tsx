@@ -61,11 +61,29 @@ function Navbar() {
         </Link>
         
         <div className="navbar-search">
-          <img src={searchIcon} alt="Search" className="search-icon" />
+          <img 
+            src={searchIcon} 
+            alt="Search" 
+            className="search-icon" 
+            onClick={() => {
+              const input = (document.querySelector('.search-input') as HTMLInputElement | null)
+              const term = input?.value?.trim() || ''
+              if (term.length === 0) return
+              navigate(`/search?q=${encodeURIComponent(term)}`)
+            }}
+            style={{ cursor: 'pointer' }}
+          />
           <input 
             type="text" 
             placeholder="Search for anything..." 
             className="search-input"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const term = (e.currentTarget.value || '').trim()
+                if (term.length === 0) return
+                navigate(`/search?q=${encodeURIComponent(term)}`)
+              }
+            }}
           />
         </div>
         

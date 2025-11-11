@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import Navbar from './components/Navbar'
 import CategoryBar from './components/CategoryBar'
 import FeatureBar from './components/FeatureBar'
@@ -14,12 +15,19 @@ import Merchandising from './pages/Merchandising'
 import Components from './pages/Components'
 import SellerDashboard from './pages/sellerDashboard'
 import ProductDetail from './pages/product'
-import './App.css'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Favorites from './pages/Favorites'
+import Search from './pages/Search'
+import { generateSampleComments } from './models/Comment'
+import './App.css'
 
 function App() {
+  // Generar comentarios de ejemplo al cargar la app (solo si no existen)
+  useEffect(() => {
+    generateSampleComments()
+  }, [])
+
   return (
     <BrowserRouter>
       <Navbar />
@@ -51,6 +59,7 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/favorites" element={<Favorites />} />
+        <Route path="/search" element={<Search />} />
       </Routes>
     </BrowserRouter>
   )
