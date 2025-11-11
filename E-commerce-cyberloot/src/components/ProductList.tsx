@@ -1,14 +1,5 @@
-type ProductCondition = 'new' | 'used' | 'refurbished'
-
-export type Product = {
-  id: string
-  title: string
-  description: string
-  price: number
-  image: string
-  seller: string
-  category: 'videogames' | 'consoles' | 'accesories' | 'merchandising' | 'components'
-}
+import { Link } from 'react-router-dom'
+import type { Product } from '../models/Product'
 
 export const products: Product[] = [
   {
@@ -18,7 +9,8 @@ export const products: Product[] = [
     price: 89.99,
     image: 'https://picsum.photos/seed/audio-auriculares/800/600',
     seller: 'Brian Moser',
-    category: 'accesories'
+    category: 'accesories',
+    condition: 'new'
   },
   {
     id: 'p-2',
@@ -27,7 +19,8 @@ export const products: Product[] = [
     price: 129.5,
     image: 'https://picsum.photos/seed/consola-retro/800/600',
     seller: 'Dexter Morgan',
-    category: 'consoles'
+    category: 'consoles',
+    condition: 'used'
   },
   {
     id: 'p-3',
@@ -36,7 +29,8 @@ export const products: Product[] = [
     price: 159.0,
     image: 'https://picsum.photos/seed/pc-upgrade/800/600',
     seller: 'Debra Morgan',
-    category: 'components'
+    category: 'components',
+    condition: 'new'
   },
   {
     id: 'p-4',
@@ -45,7 +39,8 @@ export const products: Product[] = [
     price: 149.99,
     image: 'https://picsum.photos/seed/cyberpunk-game/800/600',
     seller: 'Rita Bennett',
-    category: 'videogames'
+    category: 'videogames',
+    condition: 'new'
   },
   {
     id: 'p-5',
@@ -54,7 +49,8 @@ export const products: Product[] = [
     price: 499.99,
     image: 'https://picsum.photos/seed/ps5-console/800/600',
     seller: 'James Doakes',
-    category: 'consoles'
+    category: 'consoles',
+    condition: 'refurbished'
   },
   {
     id: 'p-6',
@@ -63,7 +59,8 @@ export const products: Product[] = [
     price: 129.99,
     image: 'https://picsum.photos/seed/keyboard-gaming/800/600',
     seller: 'Maria LaGuerta',
-    category: 'accesories'
+    category: 'accesories',
+    condition: 'new'
   },
   {
     id: 'p-7',
@@ -72,7 +69,8 @@ export const products: Product[] = [
     price: 29.99,
     image: 'https://picsum.photos/seed/gaming-tshirt/800/600',
     seller: 'Angel Batista',
-    category: 'merchandising'
+    category: 'merchandising',
+    condition: 'new'
   },
   {
     id: 'p-8',
@@ -81,7 +79,8 @@ export const products: Product[] = [
     price: 1199.99,
     image: 'https://picsum.photos/seed/rtx4080/800/600',
     seller: 'Vince Masuka',
-    category: 'components'
+    category: 'components',
+    condition: 'used'
   },
   {
     id: 'p-9',
@@ -90,7 +89,8 @@ export const products: Product[] = [
     price: 59.99,
     image: 'https://picsum.photos/seed/zelda-game/800/600',
     seller: 'Lila Tournay',
-    category: 'videogames'
+    category: 'videogames',
+    condition: 'new'
   },
   {
     id: 'p-10',
@@ -99,7 +99,8 @@ export const products: Product[] = [
     price: 69.99,
     image: 'https://picsum.photos/seed/xbox-controller/800/600',
     seller: 'Paul Bennett',
-    category: 'accesories'
+    category: 'accesories',
+    condition: 'new'
   },
   {
     id: 'p-11',
@@ -108,7 +109,8 @@ export const products: Product[] = [
     price: 39.99,
     image: 'https://picsum.photos/seed/mousepad/800/600',
     seller: 'Frank Lundy',
-    category: 'accesories'
+    category: 'accesories',
+    condition: 'new'
   },
   {
     id: 'p-12',
@@ -117,7 +119,8 @@ export const products: Product[] = [
     price: 79.99,
     image: 'https://picsum.photos/seed/elden-ring/800/600',
     seller: 'Miguel Prado',
-    category: 'videogames'
+    category: 'videogames',
+    condition: 'used'
   },
   {
     id: 'p-13',
@@ -126,7 +129,8 @@ export const products: Product[] = [
     price: 349.99,
     image: 'https://picsum.photos/seed/switch-oled/800/600',
     seller: 'Anton Briggs',
-    category: 'consoles'
+    category: 'consoles',
+    condition: 'refurbished'
   }
 ]
 
@@ -166,9 +170,9 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
         }}
       >
         {filteredProducts.map((product) => (
-          <button
+          <Link
             key={product.id}
-            onClick={() => console.log(`Clicked product: ${product.id}`)}
+            to={`/product/${product.id}`}
             style={{
               border: '1px solid #2a2a2a',
               borderRadius: 0,
@@ -180,7 +184,9 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
               textAlign: 'left',
               width: '100%',
               padding: 0,
-              position: 'relative'
+              position: 'relative',
+              textDecoration: 'none',
+              display: 'block'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-4px)'
@@ -265,7 +271,7 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
                 </span>
               </div>
             </div>
-          </button>
+          </Link>
         ))}
       </div>
     </section>
