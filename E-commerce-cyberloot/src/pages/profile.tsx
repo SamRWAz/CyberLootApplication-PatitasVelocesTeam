@@ -5,6 +5,7 @@ import type { User } from '../models/User'
 import { deleteUserById, updateUser } from '../models/User'
 import { getProductsBySellerId } from '../models/Product'
 import type { Product } from '../models/Product'
+import { updateProductInStorage, deleteProductFromStorage } from '../models/Product'
 
 function Profile() {
   const navigate = useNavigate()
@@ -135,133 +136,199 @@ function Profile() {
     navigate('/')
   }
 
+  const handleEditProduct = (product: Product) => {
+    const newTitle = window.prompt('Nuevo título', product.title) ?? product.title
+    const newPriceStr = window.prompt('Nuevo precio', String(product.price)) ?? String(product.price)
+    const newImage = window.prompt('Nueva URL de imagen', product.image) ?? product.image
+    const newDescription = window.prompt('Nueva descripción', product.description) ?? product.description
+    const newPrice = parseFloat(newPriceStr)
+    if (!isFinite(newPrice) || newPrice <= 0) {
+      alert('Precio inválido')
+      return
+    }
+    const updated: Product = { ...product, title: newTitle, price: newPrice, image: newImage, description: newDescription }
+    updateProductInStorage(updated)
+    setUserProducts(prev => prev.map(p => p.id === updated.id ? updated : p))
+  }
+
+  const handleDeleteProduct = (product: Product) => {
+    if (!user) return
+    const ok = window.confirm('¿Eliminar este producto? Esta acción no se puede deshacer.')
+    if (!ok) return
+    deleteProductFromStorage(product.id)
+    // remover de los productos del usuario
+    const nextUser: User = { ...user, productsForSale: user.productsForSale.filter(id => id !== product.id) }
+    updateUser(nextUser)
+    localStorage.setItem('cyberloot_current_user', JSON.stringify(nextUser))
+    setUser(nextUser)
+    setUserProducts(prev => prev.filter(p => p.id !== product.id))
+  }
+
   return (
     <div className="profile-page">
       <div className="profile-container">
-        <div className="profile-header">
-          <div className="profile-photo-section">
-            <img src={user.photo} alt={user.fullName} className="profile-photo" />
-          </div>
-          <div className="profile-info-section">
-            <div className="profile-header-content">
-              <div>
+        <div className="profile-grid">
+          <aside className="profile-left">
+            <div className="profile-card">
+              <div className="profile-photo-section">
+                <img src={user.photo} alt={user.fullName} className="profile-photo" />
+              </div>
+              <div className="profile-basic-info">
                 <h1 className="profile-name">{user.fullName}</h1>
                 <p className="profile-username">@{user.username}</p>
                 <p className="profile-email">{user.email}</p>
               </div>
-              {!isEditing && (
-                <button 
-                  className="btn-edit-profile"
-                  onClick={handleEditClick}
-                >
-                  Edit Profile
-                </button>
+
+              {isEditing ? (
+                <section className="edit-section">
+                  <h2>Edit Profile</h2>
+                  <form className="edit-form" onSubmit={handleEditSubmit}>
+                    <div className="form-group">
+                      <label htmlFor="fullName">Full Name *</label>
+                      <input
+                        type="text"
+                        id="fullName"
+                        name="fullName"
+                        value={editFormData.fullName}
+                        onChange={handleEditInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="email">Email *</label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={editFormData.email}
+                        onChange={handleEditInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="photo">Photo URL</label>
+                      <input
+                        type="url"
+                        id="photo"
+                        name="photo"
+                        value={editFormData.photo}
+                        onChange={handleEditInputChange}
+                        placeholder="https://example.com/photo.jpg"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="phone">Phone</label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={editFormData.phone}
+                        onChange={handleEditInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="address">Address</label>
+                      <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        value={editFormData.address}
+                        onChange={handleEditInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="location">Location</label>
+                      <input
+                        type="text"
+                        id="location"
+                        name="location"
+                        value={editFormData.location}
+                        onChange={handleEditInputChange}
+                      />
+                    </div>
+                    <div className="edit-form-buttons">
+                      <button type="submit" className="btn-save">Save Changes</button>
+                      <button type="button" className="btn-cancel" onClick={handleEditCancel}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </section>
+              ) : (
+                <section className="contact-section">
+                  <h2>Contact Information</h2>
+                  <div className="contact-info">
+                    <div className="contact-item">
+                      <span className="contact-label">Phone:</span>
+                      <span className="contact-value">{user.contactInfo.phone || 'Not provided'}</span>
+                    </div>
+                    <div className="contact-item">
+                      <span className="contact-label">Address:</span>
+                      <span className="contact-value">{user.contactInfo.address || 'Not provided'}</span>
+                    </div>
+                    <div className="contact-item">
+                      <span className="contact-label">Location:</span>
+                      <span className="contact-value">{user.contactInfo.location || 'Not provided'}</span>
+                    </div>
+                  </div>
+                </section>
               )}
-            </div>
-          </div>
-        </div>
 
-        <div className="profile-content">
-          {isEditing ? (
-            <section className="edit-section">
-              <h2>Edit Profile</h2>
-              <form className="edit-form" onSubmit={handleEditSubmit}>
-                <div className="form-group">
-                  <label htmlFor="fullName">Full Name *</label>
-                  <input
-                    type="text"
-                    id="fullName"
-                    name="fullName"
-                    value={editFormData.fullName}
-                    onChange={handleEditInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="email">Email *</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={editFormData.email}
-                    onChange={handleEditInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="photo">Photo URL</label>
-                  <input
-                    type="url"
-                    id="photo"
-                    name="photo"
-                    value={editFormData.photo}
-                    onChange={handleEditInputChange}
-                    placeholder="https://example.com/photo.jpg"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="phone">Phone</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={editFormData.phone}
-                    onChange={handleEditInputChange}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="address">Address</label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    value={editFormData.address}
-                    onChange={handleEditInputChange}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="location">Location</label>
-                  <input
-                    type="text"
-                    id="location"
-                    name="location"
-                    value={editFormData.location}
-                    onChange={handleEditInputChange}
-                  />
-                </div>
-                <div className="edit-form-buttons">
-                  <button type="submit" className="btn-save">Save Changes</button>
-                  <button type="button" className="btn-cancel" onClick={handleEditCancel}>
-                    Cancel
+              <div className="left-actions">
+                {!isEditing && (
+                  <button 
+                    className="btn-edit-profile"
+                    onClick={handleEditClick}
+                  >
+                    Edit Profile
                   </button>
-                </div>
-              </form>
-            </section>
-          ) : (
-            <section className="contact-section">
-              <h2>Contact Information</h2>
-              <div className="contact-info">
-                <div className="contact-item">
-                  <span className="contact-label">Phone:</span>
-                  <span className="contact-value">{user.contactInfo.phone || 'Not provided'}</span>
-                </div>
-                <div className="contact-item">
-                  <span className="contact-label">Address:</span>
-                  <span className="contact-value">{user.contactInfo.address || 'Not provided'}</span>
-                </div>
-                <div className="contact-item">
-                  <span className="contact-label">Location:</span>
-                  <span className="contact-value">{user.contactInfo.location || 'Not provided'}</span>
-                </div>
+                )}
+                <button 
+                  className="btn-add-product"
+                  onClick={() => navigate('/favorites')}
+                >
+                  Ver favoritos
+                </button>
+                <button 
+                  className="btn-logout"
+                  onClick={handleLogout}
+                >
+                  Log Out
+                </button>
+                {!showDeleteConfirm ? (
+                  <button 
+                    className="btn-delete-account"
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    Delete Account
+                  </button>
+                ) : (
+                  <div className="delete-confirm">
+                    <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+                    <div className="delete-buttons">
+                      <button 
+                        className="btn-confirm-delete"
+                        onClick={handleDeleteAccount}
+                      >
+                        Yes, delete account
+                      </button>
+                      <button 
+                        className="btn-cancel-delete"
+                        onClick={() => setShowDeleteConfirm(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </section>
-          )}
+            </div>
+          </aside>
 
-          <section className="products-section">
-            <h2>Products for Sale ({userProducts.length})</h2>
-            {userProducts.length === 0 ? (
-              <div className="no-products">
-                <p>You don't have any products for sale yet.</p>
+          <main className="profile-right">
+            <section className="products-section">
+              <div className="products-section-header">
+                <h2>Products for Sale ({userProducts.length})</h2>
                 <button 
                   className="btn-add-product"
                   onClick={() => navigate('/seller-dashboard')}
@@ -269,64 +336,37 @@ function Profile() {
                   Add Product
                 </button>
               </div>
-            ) : (
-              <div className="products-grid">
-                {userProducts.map((product) => (
-                  <div 
-                    key={product.id} 
-                    className="product-item"
-                    onClick={() => navigate(`/product/${product.id}`)}
-                  >
-                    <img src={product.image} alt={product.title} className="product-image" />
-                    <div className="product-details">
-                      <h3 className="product-title">{product.title}</h3>
-                      <p className="product-description">{product.description}</p>
-                      <p className="product-price">{formatPrice(product.price)}</p>
-                      <span className="product-category">{product.category}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="account-actions-section">
-            <h2>Account Actions</h2>
-            <div className="account-actions-buttons">
-              <button 
-                className="btn-logout"
-                onClick={handleLogout}
-              >
-                Log Out
-              </button>
-              {!showDeleteConfirm ? (
-                <button 
-                  className="btn-delete-account"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  Delete Account
-                </button>
+              {userProducts.length === 0 ? (
+                <div className="no-products">
+                  <p>You don't have any products for sale yet.</p>
+                </div>
               ) : (
-                <div className="delete-confirm">
-                  <p>Are you sure you want to delete your account? This action cannot be undone.</p>
-                  <div className="delete-buttons">
-                    <button 
-                      className="btn-confirm-delete"
-                      onClick={handleDeleteAccount}
+                <div className="products-grid">
+                  {userProducts.map((product) => (
+                    <div 
+                      key={product.id} 
+                      className="product-item"
+                      onClick={() => navigate(`/product/${product.id}`)}
                     >
-                      Yes, delete account
-                    </button>
-                    <button 
-                      className="btn-cancel-delete"
-                      onClick={() => setShowDeleteConfirm(false)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                      <img src={product.image} alt={product.title} className="product-image" />
+                      <div className="product-details">
+                        <h3 className="product-title">{product.title}</h3>
+                        <p className="product-description">{product.description}</p>
+                        <p className="product-price">{formatPrice(product.price)}</p>
+                        <span className="product-category">{product.category}</span>
+                        {product.sellerId === user.id && (
+                          <div style={{ display: 'flex', gap: 8, marginTop: 10 }} onClick={(e) => e.stopPropagation()}>
+                            <button className="btn-cancel" onClick={() => handleEditProduct(product)}>Editar</button>
+                            <button className="btn-delete-account" onClick={() => handleDeleteProduct(product)}>Eliminar</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
-            </div>
-          </section>
+            </section>
+          </main>
         </div>
       </div>
     </div>

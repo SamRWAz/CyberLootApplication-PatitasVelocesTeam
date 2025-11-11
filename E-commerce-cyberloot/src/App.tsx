@@ -15,6 +15,9 @@ import Components from './pages/Components'
 import SellerDashboard from './pages/sellerDashboard'
 import ProductDetail from './pages/product'
 import './App.css'
+import Cart from './pages/Cart'
+import Checkout from './pages/Checkout'
+import Favorites from './pages/Favorites'
 
 function App() {
   return (
@@ -45,6 +48,9 @@ function App() {
         <Route path="/merchandising" element={<Merchandising />} />
         <Route path="/components" element={<Components />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/favorites" element={<Favorites />} />
       </Routes>
     </BrowserRouter>
   )

@@ -1,5 +1,8 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { Product } from '../models/Product'
+import { getProductsFromStorage } from '../models/Product'
+import { addToCart, getFavorites, toggleFavorite } from '../models/User'
+import { useEffect, useState } from 'react'
 
 export const products: Product[] = [
   {
@@ -144,9 +147,27 @@ interface ProductListProps {
 }
 
 function ProductList({ category, title = 'Featured products' }: ProductListProps) {
+  const navigate = useNavigate()
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([])
+
+  useEffect(() => {
+    const currentUserJson = localStorage.getItem('cyberloot_current_user')
+    if (currentUserJson) {
+      const currentUser = JSON.parse(currentUserJson) as { id: string }
+      setFavoriteIds(getFavorites(currentUser.id))
+    } else {
+      setFavoriteIds([])
+    }
+  }, [])
+  const storedProducts = getProductsFromStorage()
+  const combined: Product[] = [...storedProducts, ...products].reduce<Product[]>((acc, p) => {
+    if (!acc.find(x => x.id === p.id)) acc.push(p)
+    return acc
+  }, [])
+
   const filteredProducts = category 
-    ? products.filter(product => product.category === category)
-    : products
+    ? combined.filter(product => product.category === category)
+    : combined
 
   if (filteredProducts.length === 0) {
     return (
@@ -211,9 +232,19 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
               />
               <button
                 onClick={(e) => {
+                  e.preventDefault()
                   e.stopPropagation()
-                  console.log(`Added to favorites: ${product.id}`)
+                  const currentUserJson = localStorage.getItem('cyberloot_current_user')
+                  if (!currentUserJson) {
+                    alert('Inicia sesión para gestionar favoritos')
+                    navigate('/login')
+                    return
+                  }
+                  const currentUser = JSON.parse(currentUserJson) as { id: string }
+                  const next = toggleFavorite(currentUser.id, product.id)
+                  setFavoriteIds(next)
                 }}
+                aria-label="Favorito"
                 style={{
                   position: 'absolute',
                   bottom: '8px',
@@ -221,7 +252,7 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  background: 'rgba(0, 0, 0, 0.6)',
+                  background: favoriteIds.includes(product.id) ? 'rgba(220, 38, 38, 0.9)' : 'rgba(0, 0, 0, 0.6)',
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
@@ -230,21 +261,13 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
                   transition: 'all 0.2s ease',
                   backdropFilter: 'blur(4px)'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(220, 38, 38, 0.8)'
-                  e.currentTarget.style.transform = 'scale(1.1)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(0, 0, 0, 0.6)'
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
               >
                 <span style={{ 
                   color: '#ffffff', 
                   fontSize: '16px',
                   userSelect: 'none'
                 }}>
-                  ♥
+                  {favoriteIds.includes(product.id) ? '❤' : '♡'}
                 </span>
               </button>
             </div>
@@ -269,6 +292,34 @@ function ProductList({ category, title = 'Featured products' }: ProductListProps
                 }}>
                   Vendido por: {product.seller}
                 </span>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    const currentUserJson = localStorage.getItem('cyberloot_current_user')
+                    if (!currentUserJson) {
+                      alert('Inicia sesión para agregar al carrito')
+                      navigate('/login')
+                      return
+                    }
+                    const currentUser = JSON.parse(currentUserJson) as { id: string }
+                    addToCart(currentUser.id, product.id, 1)
+                    alert('Producto agregado al carrito')
+                  }}
+                  style={{
+                    marginTop: 10,
+                    width: '100%',
+                    background: '#65BEE3',
+                    color: '#1D1D1B',
+                    border: 'none',
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    borderRadius: 4
+                  }}
+                >
+                  Agregar al carrito
+                </button>
               </div>
             </div>
           </Link>

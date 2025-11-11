@@ -19,6 +19,22 @@ export function saveProductToStorage(product: Product): void {
   localStorage.setItem('cyberloot_products', JSON.stringify(products))
 }
 
+// Función para actualizar un producto en localStorage
+export function updateProductInStorage(updated: Product): void {
+  const products = getProductsFromStorage()
+  const index = products.findIndex(p => p.id === updated.id)
+  if (index !== -1) {
+    products[index] = updated
+    localStorage.setItem('cyberloot_products', JSON.stringify(products))
+  }
+}
+
+// Función para eliminar un producto en localStorage
+export function deleteProductFromStorage(productId: string): void {
+  const products = getProductsFromStorage().filter(p => p.id !== productId)
+  localStorage.setItem('cyberloot_products', JSON.stringify(products))
+}
+
 // Función para obtener productos de localStorage
 export function getProductsFromStorage(): Product[] {
   const productsJson = localStorage.getItem('cyberloot_products')

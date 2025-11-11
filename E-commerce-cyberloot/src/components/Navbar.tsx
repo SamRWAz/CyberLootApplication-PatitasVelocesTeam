@@ -49,8 +49,7 @@ function Navbar() {
   }
 
   const handleCartClick = () => {
-    // TODO: Implementar funcionalidad del carrito
-    console.log('Cart clicked')
+    navigate('/cart')
   }
 
   return (

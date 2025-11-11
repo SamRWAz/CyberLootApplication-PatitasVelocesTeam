@@ -5,11 +5,14 @@ import { getProductById } from '../models/Product'
 import type { Product } from '../models/Product'
 import CommentList from '../components/CommentList'
 import '../styles/pages/product.css'
+import { addToCart } from '../models/User'
+import { getFavorites, toggleFavorite } from '../models/User'
 
 function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [product, setProduct] = useState<Product | null>(null)
+  const [isFavorite, setIsFavorite] = useState<boolean>(false)
 
   useEffect(() => {
     if (id) {
@@ -19,6 +22,15 @@ function ProductDetail() {
       const foundProduct = storedProduct || arrayProduct
       if (foundProduct) {
         setProduct(foundProduct)
+      }
+
+      const currentUserJson = localStorage.getItem('cyberloot_current_user')
+      if (currentUserJson && id) {
+        const currentUser = JSON.parse(currentUserJson) as { id: string }
+        const favs = getFavorites(currentUser.id)
+        setIsFavorite(favs.includes(id))
+      } else {
+        setIsFavorite(false)
       }
     }
   }, [id])
@@ -110,7 +122,41 @@ function ProductDetail() {
 
             <div className="product-actions">
               <button className="btn-primary">Contact Seller</button>
-              <button className="btn-secondary">Add to Favorites</button>
+              <button 
+                className="btn-primary" 
+                onClick={(e) => {
+                  e.preventDefault()
+                const currentUserJson = localStorage.getItem('cyberloot_current_user')
+                if (!currentUserJson) {
+                  alert('Inicia sesión para agregar al carrito')
+                  navigate('/login')
+                  return
+                }
+                const currentUser = JSON.parse(currentUserJson) as { id: string }
+                addToCart(currentUser.id, product.id, 1)
+                alert('Producto agregado al carrito')
+                }}
+              >
+                Agregar al carrito
+              </button>
+            <button 
+              className="btn-secondary"
+              onClick={(e) => {
+                e.preventDefault()
+                const currentUserJson = localStorage.getItem('cyberloot_current_user')
+                if (!currentUserJson) {
+                  alert('Inicia sesión para gestionar favoritos')
+                  navigate('/login')
+                  return
+                }
+                const currentUser = JSON.parse(currentUserJson) as { id: string }
+                const next = toggleFavorite(currentUser.id, product.id)
+                setIsFavorite(next.includes(product.id))
+              }}
+              aria-label="Favorito"
+            >
+              {isFavorite ? '❤' : '♡'}
+            </button>
             </div>
           </div>
         </div>
