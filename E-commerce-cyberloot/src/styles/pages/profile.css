@@ -1,0 +1,629 @@
+.profile-page {
+  min-height: 70vh;
+  padding: 2rem;
+  background-color: #ffffff;
+}
+
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 2rem;
+}
+
+.profile-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-right {
+  min-width: 0;
+}
+
+.profile-card {
+  background-color: #1D1D1B;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.profile-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  color: #1D1D1B;
+  font-size: 1.2rem;
+}
+
+.profile-basic-info { 
+  color: #fff; 
+  text-align: center; 
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.profile-header {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem;
+  background-color: #1D1D1B;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.profile-photo-section {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.profile-photo {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #65BEE3;
+}
+
+.profile-info-section { flex: 1; color: #fff; }
+.profile-header-content { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+
+.profile-name {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  color: #fff;
+}
+
+.profile-username {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: #65BEE3;
+}
+
+.profile-email {
+  margin: 0;
+  font-size: 1rem;
+  color: #d1d5db;
+}
+
+.profile-content { display: flex; flex-direction: column; gap: 2rem; }
+.left-actions { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+
+.contact-section,
+.products-section {
+  background-color: #1D1D1B;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.contact-section h2,
+.products-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: #fff;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #65BEE3;
+  padding-bottom: 0.5rem;
+}
+
+.products-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: #2a2a2a;
+  border-radius: 4px;
+}
+
+.contact-label {
+  font-weight: 600;
+  color: #65BEE3;
+  min-width: 120px;
+}
+
+.contact-value {
+  color: #fff;
+  flex: 1;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.product-item {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  color: #fff;
+}
+
+.product-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.product-details {
+  padding: 1rem;
+  color: #fff;
+}
+
+.product-title {
+  margin: 0 0 0.5rem 0;
+  color: #fff !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.product-description {
+  margin: 0 0 0.75rem 0;
+  color: #d1d5db !important;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-price {
+  margin: 0 0 0.5rem 0;
+  color: #65BEE3 !important;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.product-category {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: #9D9DCC;
+  color: #000;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.product-item .btn-cancel,
+.product-item .btn-delete-account {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  background-color: #65BEE3;
+}
+
+.product-item .btn-delete-account {
+  background-color: #dc2626;
+}
+
+.product-item .btn-cancel:hover {
+  background-color: #4a98b9;
+}
+
+.product-item .btn-delete-account:hover {
+  background-color: #b91c1c;
+}
+
+.no-products {
+  text-align: center;
+  padding: 3rem;
+  color: #d1d5db;
+}
+
+.no-products p {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  color: #d1d5db;
+}
+
+.btn-add-product {
+  padding: 0.75rem 2rem;
+  background-color: #9D9DCC;
+  color: #1D1D1B;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-add-product:hover {
+  background-color: #71719a;
+}
+
+.btn-edit-profile {
+  padding: 0.75rem 2rem;
+  background-color: #65BEE3;
+  color: #1D1D1B;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+}
+
+.btn-edit-profile:hover {
+  background-color: #4a98b9;
+}
+
+.edit-section {
+  background-color: #1D1D1B;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.edit-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: #fff;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #65BEE3;
+  padding-bottom: 0.5rem;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: #65BEE3;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 0.75rem;
+  background-color: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #65BEE3;
+}
+
+.form-group select {
+  cursor: pointer;
+}
+
+.form-group select option {
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #6b7280;
+}
+
+.edit-form-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-save {
+  padding: 0.75rem 2rem;
+  background-color: #65BEE3;
+  color: #1D1D1B;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex: 1;
+  min-width: 150px;
+}
+
+.btn-save:hover {
+  background-color: #4a98b9;
+}
+
+.btn-cancel {
+  padding: 0.75rem 2rem;
+  background-color: #9D9DCC;
+  color: #1D1D1B;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex: 1;
+  min-width: 150px;
+}
+
+.btn-cancel:hover {
+  background-color: #71719a;
+}
+
+.account-actions-section {
+  background-color: #1D1D1B;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.account-actions-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: #fff;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #dc2626;
+  padding-bottom: 0.5rem;
+}
+
+.account-actions-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-logout {
+  padding: 0.75rem 2rem;
+  background-color: #65BEE3;
+  color: #1D1D1B;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.btn-logout:hover {
+  background-color: #4a98b9;
+}
+
+.btn-delete-account {
+  padding: 0.75rem 2rem;
+  background-color: #9D9DCC;
+  color: #1D1D1B;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.btn-delete-account:hover {
+  background-color: #71719a;
+}
+
+.delete-confirm {
+  padding: 1.5rem;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border: 2px solid #dc2626;
+}
+
+.delete-confirm p {
+  color: #fff;
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.delete-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-confirm-delete {
+  padding: 0.75rem 2rem;
+  background-color: #9D9DCC;
+  color: #1D1D1B;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex: 1;
+  min-width: 150px;
+}
+
+.btn-confirm-delete:hover {
+  background-color: #71719a;
+}
+
+.btn-cancel-delete {
+  padding: 0.75rem 2rem;
+  background-color: #65BEE3;
+  color: #1D1D1B;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex: 1;
+  min-width: 150px;
+}
+
+.btn-cancel-delete:hover {
+  background-color: #4a98b9;
+}
+
+@media (max-width: 768px) {
+  .profile-grid { grid-template-columns: 1fr; }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-header-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .profile-photo {
+    width: 120px;
+    height: 120px;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-form-buttons {
+    flex-direction: column;
+  }
+
+  .btn-save,
+  .btn-cancel {
+    width: 100%;
+  }
+}
+
+/* Modal de edición de producto */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: #1D1D1B;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid #65BEE3;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: #2a2a2a;
+}
+
+.product-edit-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.modal-buttons .btn-save,
+.modal-buttons .btn-cancel {
+  flex: 1;
+  min-width: 150px;
+}
+

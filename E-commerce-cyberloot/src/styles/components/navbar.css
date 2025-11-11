@@ -72,7 +72,7 @@
 }
 
 .btn-login,
-.btn-signin {
+.btn-signup {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 4px;
@@ -91,12 +91,85 @@
   background-color: #4a98b9;
 }
 
-.btn-signin {
+.btn-signup {
   background-color: #9D9DCC;
   color: #000;
 }
 
-.btn-signin:hover {
+.btn-signup:hover {
   background-color: #71719a;
+}
+
+.navbar-user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-cart {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: color 0.3s, transform 0.2s;
+  border-radius: 4px;
+}
+
+.btn-cart:hover {
+  color: #65BEE3;
+  transform: scale(1.1);
+}
+
+.btn-cart:active {
+  transform: scale(0.95);
+}
+
+.btn-profile-image {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 2px solid transparent;
+}
+
+.btn-profile-image:hover {
+  transform: scale(1.05);
+  border-color: #65BEE3;
+  box-shadow: 0 0 0 2px rgba(101, 190, 227, 0.3);
+}
+
+.btn-profile-image:active {
+  transform: scale(0.95);
+}
+
+.profile-image-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .navbar-user-section {
+    gap: 0.75rem;
+  }
+
+  .profile-image-small {
+    width: 36px;
+    height: 36px;
+  }
+
+  .btn-cart svg {
+    width: 20px;
+    height: 20px;
+  }
 }
 
