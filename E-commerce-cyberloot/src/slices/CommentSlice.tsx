@@ -18,7 +18,7 @@ const initialState: CommentsState = {
 // FETCH (Read All) - Con JOIN para obtener datos del usuario
 export const fetchComments = createAsyncThunk('Comments/fetchComments', async () => {
   const response = await axiosInstance.get<CommentWithUser[]>(
-    'Comment?select=*,User(id,username,"fullName",photo)&order=created_at.desc'
+    'Comment?select=*,User(id,username,"fullName",photo)&order=id.desc'
   );
   return response.data.map((item: any) => ({
     id: item.id,
@@ -34,7 +34,7 @@ export const fetchComments = createAsyncThunk('Comments/fetchComments', async ()
 // FETCH by ProductId - Con JOIN para obtener datos del usuario
 export const fetchCommentsByProductId = createAsyncThunk('Comments/fetchCommentsByProductId', async (productId: string) => {
   const response = await axiosInstance.get<CommentWithUser[]>(
-    `Comment?select=*,User(id,username,"fullName",photo)&product_id=eq.${productId}&order=created_at.desc`
+    `Comment?select=*,User(id,username,"fullName",photo)&product_id=eq.${productId}&order=id.desc`
   );
   return response.data.map((item: any) => ({
     id: item.id,

@@ -1,17 +1,12 @@
-import FilterBar from '../components/FilterBar'
-import ProductList from '../components/ProductList'
-import '../styles/pages/category.css'
+import CategoryPageTemplate from './CategoryPageTemplate'
 
 function Videogames() {
   return (
-    <div className="category-page">
-      <FilterBar />
-      <div className="category-content">
-        <h1>Videogames</h1>
-        <p>Browse our collection of videogames</p>
-        <ProductList category="videogames" title="Videogames" />
-      </div>
-    </div>
+    <CategoryPageTemplate
+      baseCategory="videogames"
+      title="Videogames"
+      description="Browse our collection of videogames"
+    />
   )
 }
 

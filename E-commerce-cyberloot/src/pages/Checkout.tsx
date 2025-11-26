@@ -48,35 +48,47 @@ function Checkout() {
   return (
     <div className="product-detail-container">
       <div className="container">
-        <h1 style={{ color: '#fff' }}>Checkout</h1>
-        <form onSubmit={handlePay} style={{ display: 'grid', gap: 16, maxWidth: 480 }}>
+        <h1 style={{ color: 'var(--text-primary)' }}>Checkout</h1>
+        <form
+          onSubmit={handlePay}
+          style={{
+            display: 'grid',
+            gap: 18,
+            maxWidth: 480,
+            background: 'var(--surface-strong)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '2rem',
+            border: 'var(--glass-border)',
+            boxShadow: 'var(--shadow-soft)'
+          }}
+        >
           <div>
-            <label style={{ color: '#9ca3af', display: 'block', marginBottom: 4 }}>Cardholder Name</label>
-            <input required type="text" style={{ width: '100%', padding: 10 }} />
+            <label style={{ color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Cardholder Name</label>
+            <input required type="text" style={{ width: '100%', padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-primary)' }} />
           </div>
           <div>
-            <label style={{ color: '#9ca3af', display: 'block', marginBottom: 4 }}>Card Number</label>
-            <input required type="text" inputMode="numeric" pattern="[0-9\\s]{12,19}" placeholder="1234 5678 9012 3456" style={{ width: '100%', padding: 10 }} />
+            <label style={{ color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Card Number</label>
+            <input required type="text" inputMode="numeric" pattern="[0-9\\s]{12,19}" placeholder="1234 5678 9012 3456" style={{ width: '100%', padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-primary)' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={{ color: '#9ca3af', display: 'block', marginBottom: 4 }}>Expiration (MM/YY)</label>
-              <input required type="text" placeholder="MM/YY" style={{ width: '100%', padding: 10 }} />
+              <label style={{ color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Expiration (MM/YY)</label>
+              <input required type="text" placeholder="MM/YY" style={{ width: '100%', padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-primary)' }} />
             </div>
             <div>
-              <label style={{ color: '#9ca3af', display: 'block', marginBottom: 4 }}>CVC</label>
-              <input required type="text" inputMode="numeric" pattern="[0-9]{3,4}" placeholder="123" style={{ width: '100%', padding: 10 }} />
+              <label style={{ color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>CVC</label>
+              <input required type="text" inputMode="numeric" pattern="[0-9]{3,4}" placeholder="123" style={{ width: '100%', padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-primary)' }} />
             </div>
           </div>
           <div>
-            <label style={{ color: '#9ca3af', display: 'block', marginBottom: 4 }}>Address</label>
-            <input required type="text" style={{ width: '100%', padding: 10 }} />
+            <label style={{ color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Address</label>
+            <input required type="text" style={{ width: '100%', padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-primary)' }} />
           </div>
           <div>
-            <label style={{ color: '#9ca3af', display: 'block', marginBottom: 4 }}>City</label>
-            <input required type="text" style={{ width: '100%', padding: 10 }} />
+            <label style={{ color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>City</label>
+            <input required type="text" style={{ width: '100%', padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-primary)' }} />
           </div>
-          <div style={{ color: '#fff', fontWeight: 700, marginTop: 8 }}>Total: {formatPrice(total)}</div>
+          <div style={{ color: 'var(--accent)', fontWeight: 700, marginTop: 8, fontSize: '1.1rem' }}>Total: {formatPrice(total)}</div>
           <button type="submit" className="btn-primary" style={{ width: 240 }}>Pay</button>
         </form>
       </div>

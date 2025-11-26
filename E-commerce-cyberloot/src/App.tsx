@@ -4,6 +4,7 @@ import CategoryBar from './components/CategoryBar'
 import FeatureBar from './components/FeatureBar'
 import ProductList from './components/ProductList'
 import NoveltyGallery from './components/NoveltyGallery'
+import Footer from './components/Footer'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import Profile from './pages/profile'
@@ -27,8 +28,8 @@ function App() {
       <Routes>
         <Route path="/" element={
           <>
-            <main className="main">
-              <div className="container">
+            <main className="hero-section">
+              <div className="hero-content">
                 <h1>Find anything you need</h1>
                 <p>Browse thousands of items from trusted sellers in your area. Buy and sell with confidence on our marketplace.</p>
               </div>
@@ -54,6 +55,7 @@ function App() {
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/search" element={<Search />} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   )
 }

@@ -99,9 +99,9 @@ function ProductDetail() {
           </div>
 
           <div className="product-info-section">
-            <h1 className="product-title" style={{ color: '#1D1D1B' }}>{product?.title || 'Title not available'}</h1>
+            <h1 className="product-title">{product?.title || 'Title not available'}</h1>
             
-            <div className="product-price" style={{ color: '#1D1D1B' }}>
+            <div className="product-price">
               {formatPrice(product.price)}
             </div>
 

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { useAppDispatch, useAppSelector } from '../slices/hooks'
 import { fetchProducts } from '../slices/ProductSlice'
 import { addToCart, getFavorites, toggleFavorite } from '../models/User'
@@ -129,8 +129,8 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
   }
 
   return (
-    <section className="container" style={{ padding: '2rem 0' }}>
-      <h2 style={{ marginBottom: '1rem' }}>{title}</h2>
+    <section className="container" style={{ padding: '2.5rem 0' }}>
+      <h2 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: 600 }}>{title}</h2>
       <div
         style={{
           display: 'grid',
@@ -142,7 +142,7 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
           <Link
             key={product.id}
             to={`/product/${product.id}`}
-            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+            onClick={(e: ReactMouseEvent<HTMLAnchorElement>) => {
               const target = e.target as HTMLElement
               const favoriteButton = target.closest('button[aria-label="Favorite"]')
               if (favoriteButton) {
@@ -152,11 +152,11 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
               }
             }}
             style={{
-              border: '1px solid #2a2a2a',
-              borderRadius: 0,
-              background: '#1D1D1B',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--surface-strong)',
               overflow: 'hidden',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+              boxShadow: 'var(--shadow-soft)',
               cursor: 'pointer',
               transition: 'transform 0.2s ease, box-shadow 0.2s ease',
               textAlign: 'left',
@@ -166,13 +166,13 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
               textDecoration: 'none',
               display: 'block'
             }}
-            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+            onMouseEnter={(e: ReactMouseEvent<HTMLAnchorElement>) => {
               e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.35)'
+              e.currentTarget.style.boxShadow = 'var(--shadow-md)'
             }}
-            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+            onMouseLeave={(e: ReactMouseEvent<HTMLAnchorElement>) => {
               e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)'
+              e.currentTarget.style.boxShadow = 'var(--shadow-soft)'
             }}
           >
             <div style={{ position: 'relative', paddingTop: '56%' }}>
@@ -261,20 +261,20 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
             </div>
 
             <div style={{ padding: '16px 16px 12px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#ffffff' }}>{product.title}</h3>
-              <p style={{ margin: '8px 0 12px', color: '#d1d5db', fontSize: '.95rem', lineHeight: 1.5 }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--text-primary)' }}>{product.title}</h3>
+              <p style={{ margin: '8px 0 12px', color: 'var(--text-muted)', fontSize: '.95rem', lineHeight: 1.5 }}>
                 {product.description}
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <span style={{ fontWeight: 700, color: '#ffffff' }}>{formatPrice(product.price)}</span>
+                <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{formatPrice(product.price)}</span>
               </div>
               <div style={{ 
-                borderTop: '1px solid #2a2a2a', 
+                borderTop: '1px solid rgba(255,255,255,0.08)', 
                 paddingTop: '8px',
                 marginTop: '8px'
               }}>
                 <span style={{ 
-                  color: '#9ca3af', 
+                  color: 'var(--text-muted)', 
                   fontSize: '0.85rem',
                   fontStyle: 'italic'
                 }}>
@@ -297,13 +297,23 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                   style={{
                     marginTop: 10,
                     width: '100%',
-                    background: '#65BEE3',
-                    color: '#1D1D1B',
+                    background: 'linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%)',
+                    color: '#050510',
                     border: 'none',
                     padding: '10px 12px',
                     cursor: 'pointer',
                     fontWeight: 700,
-                    borderRadius: 4
+                    borderRadius: 'var(--radius-sm)',
+                    boxShadow: '0 10px 20px rgba(2,6,23,0.35)',
+                    transition: 'transform 0.2s ease, box-shadow 0.3s ease'
+                  }}
+                  onMouseEnter={(e: ReactMouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 14px 26px rgba(2,6,23,0.4)'
+                  }}
+                  onMouseLeave={(e: ReactMouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 10px 20px rgba(2,6,23,0.35)'
                   }}
                 >
                   Add to Cart

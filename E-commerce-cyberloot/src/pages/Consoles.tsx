@@ -1,17 +1,12 @@
-import FilterBar from '../components/FilterBar'
-import ProductList from '../components/ProductList'
-import '../styles/pages/category.css'
+import CategoryPageTemplate from './CategoryPageTemplate'
 
 function Consoles() {
   return (
-    <div className="category-page">
-      <FilterBar />
-      <div className="category-content">
-        <h1>Consoles</h1>
-        <p>Browse our collection of gaming consoles</p>
-        <ProductList category="consoles" title="Consoles" />
-      </div>
-    </div>
+    <CategoryPageTemplate
+      baseCategory="consoles"
+      title="Consoles"
+      description="Browse our collection of gaming consoles"
+    />
   )
 }
 

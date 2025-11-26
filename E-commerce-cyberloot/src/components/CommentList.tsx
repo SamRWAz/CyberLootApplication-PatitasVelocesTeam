@@ -93,8 +93,8 @@ function CommentList({ productId }: CommentListProps) {
           </button>
         </form>
       ) : (
-        <p style={{ color: '#9ca3af', marginBottom: '1rem' }}>
-          <a href="/login" style={{ color: '#65BEE3' }}>Log in</a> to comment
+        <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
+          <a href="/login" style={{ color: 'var(--accent)' }}>Log in</a> to comment
         </p>
       )}
 
