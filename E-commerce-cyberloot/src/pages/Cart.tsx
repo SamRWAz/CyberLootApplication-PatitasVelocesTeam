@@ -1,17 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppSelector } from '../slices/hooks'
+import { fetchProducts } from '../slices/ProductSlice'
+import { useAppDispatch } from '../slices/hooks'
 import { getCart, updateCartItem, removeFromCart, type CartItem } from '../models/User'
-import { getProductById } from '../models/Product'
 import type { Product } from '../models/Product'
 import '../styles/pages/product.css'
 
 function Cart() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const { Products } = useAppSelector((state) => state.products)
   const [userId, setUserId] = useState<string | null>(null)
   const [items, setItems] = useState<CartItem[]>([])
-  const [productsMap, setProductsMap] = useState<Record<string, Product | undefined>>({})
 
   useEffect(() => {
+    // Cargar productos si no están cargados
+    if (Products.length === 0) {
+      dispatch(fetchProducts())
+    }
+
     const currentUserJson = localStorage.getItem('cyberloot_current_user')
     if (!currentUserJson) {
       navigate('/login')
@@ -21,10 +29,19 @@ function Cart() {
     setUserId(currentUser.id)
     const cart = getCart(currentUser.id)
     setItems(cart)
+  }, [navigate, dispatch, Products.length])
+
+  // Crear mapa de productos desde Redux
+  const productsMap = useMemo(() => {
     const map: Record<string, Product | undefined> = {}
-    cart.forEach(ci => { map[ci.productId] = getProductById(ci.productId) })
-    setProductsMap(map)
-  }, [navigate])
+    items.forEach(ci => {
+      const product = Products.find(p => p.id === ci.productId) as any
+      if (product) {
+        map[ci.productId] = product
+      }
+    })
+    return map
+  }, [items, Products])
 
   const subtotal = useMemo(() => {
     return items.reduce((sum, it) => {
@@ -52,9 +69,9 @@ function Cart() {
   return (
     <div className="product-detail-container">
       <div className="container">
-        <h1 style={{ color: '#fff' }}>Mi carrito</h1>
+        <h1 style={{ color: 'var(--text-primary)' }}>My Cart</h1>
         {items.length === 0 ? (
-          <p style={{ color: '#d1d5db' }}>Tu carrito está vacío.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Your cart is empty.</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
             <div style={{ display: 'grid', gap: 12 }}>
@@ -62,31 +79,31 @@ function Cart() {
                 const p = productsMap[ci.productId]
                 if (!p) return null
                 return (
-                  <div key={ci.productId} style={{ display: 'grid', gridTemplateColumns: '96px 1fr auto', gap: 12, alignItems: 'center', background: '#1D1D1B', padding: 12, borderRadius: 8 }}>
+                  <div key={ci.productId} style={{ display: 'grid', gridTemplateColumns: '96px 1fr auto', gap: 12, alignItems: 'center', background: 'var(--surface-strong)', padding: 12, borderRadius: 'var(--radius-md)', border: 'var(--glass-border)', boxShadow: 'var(--shadow-soft)' }}>
                     <img src={p.image} alt={p.title} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 6 }} />
                     <div>
-                      <div style={{ color: '#fff', fontWeight: 600 }}>{p.title}</div>
-                      <div style={{ color: '#9ca3af', fontSize: 14 }}>{formatPrice(p.price)}</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{p.title}</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>{formatPrice(p.price)}</div>
                       <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
                         <button onClick={() => handleQtyChange(p.id, Math.max(1, ci.quantity - 1))} className="btn-secondary">-</button>
-                        <span style={{ color: '#fff', minWidth: 24, textAlign: 'center' }}>{ci.quantity}</span>
+                        <span style={{ color: 'var(--text-primary)', minWidth: 24, textAlign: 'center' }}>{ci.quantity}</span>
                         <button onClick={() => handleQtyChange(p.id, ci.quantity + 1)} className="btn-secondary">+</button>
-                        <button onClick={() => handleRemove(p.id)} className="btn-delete-account" style={{ marginLeft: 12 }}>Quitar</button>
+                        <button onClick={() => handleRemove(p.id)} className="btn-delete-account" style={{ marginLeft: 12 }}>Remove</button>
                       </div>
                     </div>
-                    <div style={{ color: '#fff', fontWeight: 700 }}>{formatPrice(p.price * ci.quantity)}</div>
+                    <div style={{ color: 'var(--accent)', fontWeight: 700 }}>{formatPrice(p.price * ci.quantity)}</div>
                   </div>
                 )
               })}
             </div>
-            <div style={{ background: '#1D1D1B', padding: 16, borderRadius: 8, height: 'fit-content' }}>
-              <div style={{ color: '#fff', fontWeight: 700, marginBottom: 8 }}>Resumen</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#d1d5db', marginBottom: 8 }}>
+            <div style={{ background: 'var(--surface-strong)', padding: 20, borderRadius: 'var(--radius-md)', height: 'fit-content', border: 'var(--glass-border)', boxShadow: 'var(--shadow-soft)' }}>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginBottom: 8 }}>Summary</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', marginBottom: 8 }}>
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
               <button className="btn-primary" style={{ width: '100%' }} onClick={() => navigate('/checkout')}>
-                Continue to payment
+                Continue to Payment
               </button>
             </div>
           </div>
@@ -97,5 +114,3 @@ function Cart() {
 }
 
 export default Cart
-
-

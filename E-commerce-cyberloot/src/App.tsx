@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
 import Navbar from './components/Navbar'
 import CategoryBar from './components/CategoryBar'
 import FeatureBar from './components/FeatureBar'
 import ProductList from './components/ProductList'
 import NoveltyGallery from './components/NoveltyGallery'
+import Footer from './components/Footer'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import Profile from './pages/profile'
@@ -19,23 +19,17 @@ import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Favorites from './pages/Favorites'
 import Search from './pages/Search'
-import { generateSampleComments } from './models/Comment'
 import './App.css'
 
 function App() {
-  // Generar comentarios de ejemplo al cargar la app (solo si no existen)
-  useEffect(() => {
-    generateSampleComments()
-  }, [])
-
   return (
     <BrowserRouter>
       <Navbar />
       <Routes>
         <Route path="/" element={
           <>
-            <main className="main">
-              <div className="container">
+            <main className="hero-section">
+              <div className="hero-content">
                 <h1>Find anything you need</h1>
                 <p>Browse thousands of items from trusted sellers in your area. Buy and sell with confidence on our marketplace.</p>
               </div>
@@ -61,6 +55,7 @@ function App() {
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/search" element={<Search />} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   )
 }

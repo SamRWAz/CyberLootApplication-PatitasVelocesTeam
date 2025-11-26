@@ -4,14 +4,23 @@ import logo from '../assets/LogoEc.png'
 import searchIcon from '../assets/Search.png'
 import { Link, useNavigate } from 'react-router-dom'
 import type { User } from '../models/User'
+import { getCurrentUser, onAuthStateChange } from '../utils/auth'
 
 function Navbar() {
   const [user, setUser] = useState<User | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Verificar si hay un usuario logueado
-    const checkUser = () => {
+    // Obtener usuario actual al cargar
+    getCurrentUser().then(setUser)
+
+    // Escuchar cambios en el estado de autenticación
+    const { data: { subscription } } = onAuthStateChange((user) => {
+      setUser(user)
+    })
+
+    // También verificar localStorage como fallback
+    const checkLocalStorage = () => {
       const currentUserJson = localStorage.getItem('cyberloot_current_user')
       if (currentUserJson) {
         try {
@@ -19,28 +28,22 @@ function Navbar() {
           setUser(currentUser)
         } catch (e) {
           console.error('Error parsing user data:', e)
-          setUser(null)
         }
-      } else {
-        setUser(null)
       }
     }
 
-    checkUser()
+    checkLocalStorage()
 
     // Escuchar cambios en localStorage
     const handleStorageChange = () => {
-      checkUser()
+      checkLocalStorage()
     }
 
     window.addEventListener('storage', handleStorageChange)
-    
-    // Verificar periódicamente (por si el cambio fue en la misma pestaña)
-    const interval = setInterval(checkUser, 1000)
 
     return () => {
+      subscription.unsubscribe()
       window.removeEventListener('storage', handleStorageChange)
-      clearInterval(interval)
     }
   }, [])
 

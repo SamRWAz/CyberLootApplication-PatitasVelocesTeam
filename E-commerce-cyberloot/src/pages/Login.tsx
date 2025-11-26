@@ -3,15 +3,17 @@ import '../styles/pages/login.css'
 import loginImage from '../assets/LogIn.jpeg'
 import logo from '../assets/LogoEc.png'
 import { Link, useNavigate } from 'react-router-dom'
-import { authenticateUser } from '../models/User'
+import { signIn } from '../utils/auth'
 
 function Login() {
   const navigate = useNavigate()
   const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
 
     const formData = new FormData(e.currentTarget)
     const email = formData.get('email') as string
@@ -19,23 +21,25 @@ function Login() {
 
     // Validaciones
     if (!email || !password) {
-      setError('Por favor, completa todos los campos')
+      setError('Please fill in all fields')
+      setLoading(false)
       return
     }
 
-    // Autenticar usuario
-    const user = authenticateUser(email, password)
+    try {
+      // Autenticar con Supabase Auth
+      const { user } = await signIn(email, password)
 
-    if (!user) {
-      setError('Email o contraseña incorrectos')
-      return
+      // Guardar usuario actual en sesión
+      localStorage.setItem('cyberloot_current_user', JSON.stringify(user))
+
+      // Redirigir al perfil
+      navigate('/profile')
+    } catch (err: any) {
+      setError(err.message || 'Incorrect email or password')
+    } finally {
+      setLoading(false)
     }
-
-    // Guardar usuario actual en sesión
-    localStorage.setItem('cyberloot_current_user', JSON.stringify(user))
-
-    // Redirigir al perfil
-    navigate('/profile')
   }
 
   return (
@@ -56,6 +60,7 @@ function Login() {
                 name="email"
                 placeholder="Enter your email" 
                 required 
+                disabled={loading}
               />
             </div>
             <div className="form-group">
@@ -66,9 +71,12 @@ function Login() {
                 name="password"
                 placeholder="Enter your password" 
                 required 
+                disabled={loading}
               />
             </div>
-            <button type="submit" className="btn-submit">Log In</button>
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? 'Logging in...' : 'Log In'}
+            </button>
             <p className="login-signup-link">
               Don't have an account? <Link to="/signup">Sign up</Link>
             </p>
@@ -83,4 +91,3 @@ function Login() {
 }
 
 export default Login
-

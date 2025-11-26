@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../slices/hooks'
+import { updateUser, deleteUser, fetchUsers } from '../slices/UserSlice'
+import { updateProduct, deleteProduct, fetchProductsByUserId } from '../slices/ProductSlice'
 import '../styles/pages/profile.css'
 import type { User } from '../models/User'
-import { deleteUserById, updateUser } from '../models/User'
-import { getProductsBySellerId } from '../models/Product'
 import type { Product } from '../models/Product'
-import { updateProductInStorage, deleteProductFromStorage } from '../models/Product'
 
 function Profile() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const { Users } = useAppSelector((state) => state.users)
+  const { Products } = useAppSelector((state) => state.products)
   const [user, setUser] = useState<User | null>(null)
-  const [userProducts, setUserProducts] = useState<Product[]>([])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -32,6 +34,11 @@ function Profile() {
   })
 
   useEffect(() => {
+    // Cargar usuarios si no están cargados
+    if (Users.length === 0) {
+      dispatch(fetchUsers())
+    }
+
     // Obtener usuario actual de localStorage
     const currentUserJson = localStorage.getItem('cyberloot_current_user')
     if (!currentUserJson) {
@@ -46,26 +53,20 @@ function Profile() {
     setEditFormData({
       fullName: currentUser.fullName,
       email: currentUser.email,
-      photo: currentUser.photo,
-      phone: currentUser.contactInfo.phone,
-      address: currentUser.contactInfo.address,
-      location: currentUser.contactInfo.location
+      photo: currentUser.photo || '',
+      phone: currentUser.phone,
+      address: currentUser.address,
+      location: currentUser.location
     })
 
-    // Obtener productos del usuario usando sellerId
+    // Cargar productos del usuario
     if (currentUser.id) {
-      const products = getProductsBySellerId(currentUser.id)
-      setUserProducts(products)
+      dispatch(fetchProductsByUserId(currentUser.id))
     }
-  }, [navigate])
+  }, [navigate, dispatch, Users.length])
 
-  // Recargar productos cuando se editen
-  useEffect(() => {
-    if (user && !editingProduct) {
-      const products = getProductsBySellerId(user.id)
-      setUserProducts(products)
-    }
-  }, [user, editingProduct])
+  // Filtrar productos del usuario actual
+  const userProducts = Products.filter(p => p.user_id === user?.id) as any[]
 
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
@@ -75,17 +76,18 @@ function Profile() {
     return <div className="profile-loading">Loading profile...</div>
   }
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (!user) return
 
-    // Eliminar usuario
-    const deleted = deleteUserById(user.id)
-    
-    if (deleted) {
-      // Limpiar sesión
+    const ok = window.confirm('Are you sure you want to delete your account? This action cannot be undone.')
+    if (!ok) return
+
+    try {
+      await dispatch(deleteUser(user.id)).unwrap()
       localStorage.removeItem('cyberloot_current_user')
-      // Redirigir al login
       navigate('/login')
+    } catch (err) {
+      alert('Error deleting account')
     }
   }
 
@@ -95,15 +97,14 @@ function Profile() {
 
   const handleEditCancel = () => {
     setIsEditing(false)
-    // Restaurar valores originales
     if (user) {
       setEditFormData({
         fullName: user.fullName,
         email: user.email,
-        photo: user.photo,
-        phone: user.contactInfo.phone,
-        address: user.contactInfo.address,
-        location: user.contactInfo.location
+        photo: user.photo || '',
+        phone: user.phone,
+        address: user.address,
+        location: user.location
       })
     }
   }
@@ -116,40 +117,42 @@ function Profile() {
     }))
   }
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
 
-    // Validaciones básicas
     if (!editFormData.fullName || !editFormData.email) {
       alert('Please fill in all required fields')
       return
     }
 
-    // Actualizar usuario
-    const updatedUser: User = {
-      ...user,
-      fullName: editFormData.fullName,
-      email: editFormData.email,
-      photo: editFormData.photo || user.photo,
-      contactInfo: {
+    try {
+      const updatedUser = await dispatch(updateUser({
+        ...user,
+        fullName: editFormData.fullName,
+        email: editFormData.email,
+        photo: editFormData.photo || null,
         phone: editFormData.phone,
         address: editFormData.address,
         location: editFormData.location
-      }
-    }
+      })).unwrap()
 
-    // Guardar en localStorage y actualizar estado
-    updateUser(updatedUser)
-    localStorage.setItem('cyberloot_current_user', JSON.stringify(updatedUser))
-    setUser(updatedUser)
-    setIsEditing(false)
+      localStorage.setItem('cyberloot_current_user', JSON.stringify(updatedUser))
+      setUser(updatedUser)
+      setIsEditing(false)
+    } catch (err) {
+      alert('Error updating profile')
+    }
   }
 
-  const handleLogout = () => {
-    // Limpiar sesión
+  const handleLogout = async () => {
+    try {
+      const { signOut } = await import('../utils/auth')
+      await signOut()
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
     localStorage.removeItem('cyberloot_current_user')
-    // Redirigir al inicio
     navigate('/')
   }
 
@@ -185,41 +188,46 @@ function Profile() {
     }))
   }
 
-  const handleProductEditSubmit = (e: React.FormEvent) => {
+  const handleProductEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!editingProduct) return
+    if (!editingProduct || !user) return
 
     const newPrice = parseFloat(productEditForm.price)
     if (!isFinite(newPrice) || newPrice <= 0) {
-      alert('Precio inválido')
+      alert('Invalid price')
       return
     }
 
-    const updated: Product = {
-      ...editingProduct,
-      title: productEditForm.title,
-      price: newPrice,
-      image: productEditForm.image,
-      description: productEditForm.description,
-      category: productEditForm.category,
-      condition: productEditForm.condition
+    try {
+      await dispatch(updateProduct({
+        ...editingProduct,
+        title: productEditForm.title,
+        price: newPrice,
+        image: productEditForm.image,
+        description: productEditForm.description,
+        category: productEditForm.category,
+        condition: productEditForm.condition,
+        user_id: user.id
+      })).unwrap()
+
+      dispatch(fetchProductsByUserId(user.id))
+      handleProductEditCancel()
+    } catch (err) {
+      alert('Error updating product')
     }
-    updateProductInStorage(updated)
-    setUserProducts(prev => prev.map(p => p.id === updated.id ? updated : p))
-    handleProductEditCancel()
   }
 
-  const handleDeleteProduct = (product: Product) => {
+  const handleDeleteProduct = async (product: Product) => {
     if (!user) return
-    const ok = window.confirm('¿Eliminar este producto? Esta acción no se puede deshacer.')
+    const ok = window.confirm('Delete this product? This action cannot be undone.')
     if (!ok) return
-    deleteProductFromStorage(product.id)
-    // remover de los productos del usuario
-    const nextUser: User = { ...user, productsForSale: user.productsForSale.filter(id => id !== product.id) }
-    updateUser(nextUser)
-    localStorage.setItem('cyberloot_current_user', JSON.stringify(nextUser))
-    setUser(nextUser)
-    setUserProducts(prev => prev.filter(p => p.id !== product.id))
+
+    try {
+      await dispatch(deleteProduct(product.id)).unwrap()
+      dispatch(fetchProductsByUserId(user.id))
+    } catch (err) {
+      alert('Error deleting product')
+    }
   }
 
   return (
@@ -229,7 +237,7 @@ function Profile() {
           <aside className="profile-left">
             <div className="profile-card">
               <div className="profile-photo-section">
-                <img src={user.photo} alt={user.fullName} className="profile-photo" />
+                <img src={user.photo || 'https://via.placeholder.com/150'} alt={user.fullName} className="profile-photo" />
               </div>
               <div className="profile-basic-info">
                 <h1 className="profile-name">{user.fullName}</h1>
@@ -318,15 +326,15 @@ function Profile() {
                   <div className="contact-info">
                     <div className="contact-item">
                       <span className="contact-label">Phone:</span>
-                      <span className="contact-value">{user.contactInfo.phone || 'Not provided'}</span>
+                      <span className="contact-value">{user.phone || 'Not provided'}</span>
                     </div>
                     <div className="contact-item">
                       <span className="contact-label">Address:</span>
-                      <span className="contact-value">{user.contactInfo.address || 'Not provided'}</span>
+                      <span className="contact-value">{user.address || 'Not provided'}</span>
                     </div>
                     <div className="contact-item">
                       <span className="contact-label">Location:</span>
-                      <span className="contact-value">{user.contactInfo.location || 'Not provided'}</span>
+                      <span className="contact-value">{user.location || 'Not provided'}</span>
                     </div>
                   </div>
                 </section>
@@ -400,7 +408,7 @@ function Profile() {
                 </div>
               ) : (
                 <div className="products-grid">
-                  {userProducts.map((product) => (
+                  {userProducts.map((product: any) => (
                     <div 
                       key={product.id} 
                       className="product-item"
@@ -412,7 +420,7 @@ function Profile() {
                         <p className="product-description">{product.description}</p>
                         <p className="product-price">{formatPrice(product.price)}</p>
                         <span className="product-category">{product.category}</span>
-                        {product.sellerId === user.id && (
+                        {product.user_id === user.id && (
                           <div style={{ display: 'flex', gap: 8, marginTop: 10 }} onClick={(e) => e.stopPropagation()}>
                             <button className="btn-cancel" onClick={() => handleEditProduct(product)}>Edit</button>
                             <button className="btn-delete-account" onClick={() => handleDeleteProduct(product)}>Delete</button>
@@ -531,4 +539,3 @@ function Profile() {
 }
 
 export default Profile
-

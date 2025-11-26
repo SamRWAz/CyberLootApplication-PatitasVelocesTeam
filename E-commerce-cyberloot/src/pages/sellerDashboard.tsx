@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../slices/hooks'
+import { createProduct, fetchProductsByUserId } from '../slices/ProductSlice'
 import '../styles/pages/seller-dashboard.css'
 import type { User } from '../models/User'
-import { saveProductToStorage, getProductsBySellerId } from '../models/Product'
 import type { Product } from '../models/Product'
-import { addProductToUser } from '../models/User'
 
 function SellerDashboard() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const { Products } = useAppSelector((state) => state.products)
   const [user, setUser] = useState<User | null>(null)
-  const [userProducts, setUserProducts] = useState<Product[]>([])
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState<string>('')
   const [success, setSuccess] = useState<string>('')
+  const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -34,14 +36,14 @@ function SellerDashboard() {
     const currentUser: User = JSON.parse(currentUserJson)
     setUser(currentUser)
 
-    // Cargar productos del usuario
-    loadUserProducts(currentUser.id)
-  }, [navigate])
+    // Cargar productos del usuario desde Redux
+    if (currentUser.id) {
+      dispatch(fetchProductsByUserId(currentUser.id))
+    }
+  }, [navigate, dispatch])
 
-  const loadUserProducts = (userId: string) => {
-    const products = getProductsBySellerId(userId)
-    setUserProducts(products)
-  }
+  // Filtrar productos del usuario actual
+  const userProducts = Products.filter(p => p.user_id === user?.id) as any[]
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -51,63 +53,63 @@ function SellerDashboard() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
+    setLoading(true)
 
-    if (!user) return
+    if (!user) {
+      setError('User not found')
+      setLoading(false)
+      return
+    }
 
     // Validaciones
     if (!formData.title || !formData.description || !formData.price || !formData.image) {
-      setError('Por favor, completa todos los campos')
+      setError('Please fill in all fields')
+      setLoading(false)
       return
     }
 
     const price = parseFloat(formData.price)
     if (isNaN(price) || price <= 0) {
-      setError('El precio debe ser un número válido mayor a 0')
+      setError('Price must be a valid number greater than 0')
+      setLoading(false)
       return
     }
 
-    // Crear nuevo producto
-    const newProduct: Product = {
-      id: `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      title: formData.title,
-      description: formData.description,
-      price: price,
-      image: formData.image,
-      seller: user.fullName,
-      sellerId: user.id,
-      category: formData.category,
-      condition: formData.condition
+    try {
+      // Crear nuevo producto usando Redux
+      await dispatch(createProduct({
+        title: formData.title,
+        description: formData.description,
+        price: price,
+        image: formData.image,
+        user_id: user.id,
+        category: formData.category,
+        condition: formData.condition
+      })).unwrap()
+
+      // Recargar productos del usuario
+      dispatch(fetchProductsByUserId(user.id))
+
+      // Limpiar formulario
+      setFormData({
+        title: '',
+        description: '',
+        price: '',
+        image: '',
+        category: 'videogames',
+        condition: 'new'
+      })
+      setShowForm(false)
+      setSuccess('Product added successfully')
+    } catch (err: any) {
+      setError(err.message || 'Error creating product')
+    } finally {
+      setLoading(false)
     }
-
-    // Guardar producto
-    saveProductToStorage(newProduct)
-
-    // Agregar producto a la lista del usuario
-    addProductToUser(user.id, newProduct.id)
-
-    // Actualizar usuario en localStorage
-    const updatedUser = { ...user, productsForSale: [...user.productsForSale, newProduct.id] }
-    localStorage.setItem('cyberloot_current_user', JSON.stringify(updatedUser))
-    setUser(updatedUser)
-
-    // Recargar productos
-    loadUserProducts(user.id)
-
-    // Limpiar formulario
-    setFormData({
-      title: '',
-      description: '',
-      price: '',
-      image: '',
-      category: 'videogames',
-      condition: 'new'
-    })
-    setShowForm(false)
-    setSuccess('Producto agregado exitosamente')
   }
 
   const formatPrice = (value: number) => {
@@ -115,19 +117,19 @@ function SellerDashboard() {
   }
 
   if (!user) {
-    return <div className="dashboard-loading">Cargando...</div>
+    return <div className="dashboard-loading">Loading...</div>
   }
 
   return (
     <div className="seller-dashboard-page">
       <div className="dashboard-container">
         <div className="dashboard-header">
-          <h1>Panel de Vendedor</h1>
+          <h1>Seller Dashboard</h1>
           <button 
             className="btn-add-product"
             onClick={() => setShowForm(!showForm)}
           >
-            {showForm ? 'Cancelar' : 'Agregar Producto'}
+            {showForm ? 'Cancel' : 'Add Product'}
           </button>
         </div>
 
@@ -136,9 +138,9 @@ function SellerDashboard() {
 
         {showForm && (
           <form className="product-form" onSubmit={handleSubmit}>
-            <h2>Nuevo Producto</h2>
+            <h2>New Product</h2>
             <div className="form-group">
-              <label htmlFor="title">Título</label>
+              <label htmlFor="title">Title</label>
               <input
                 type="text"
                 id="title"
@@ -146,10 +148,11 @@ function SellerDashboard() {
                 value={formData.title}
                 onChange={handleInputChange}
                 required
+                disabled={loading}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="description">Descripción</label>
+              <label htmlFor="description">Description</label>
               <textarea
                 id="description"
                 name="description"
@@ -157,11 +160,12 @@ function SellerDashboard() {
                 onChange={handleInputChange}
                 rows={4}
                 required
+                disabled={loading}
               />
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="price">Precio (USD)</label>
+                <label htmlFor="price">Price (USD)</label>
                 <input
                   type="number"
                   id="price"
@@ -171,41 +175,44 @@ function SellerDashboard() {
                   step="0.01"
                   min="0"
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="category">Categoría</label>
+                <label htmlFor="category">Category</label>
                 <select
                   id="category"
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
                   required
+                  disabled={loading}
                 >
-                  <option value="videogames">Videojuegos</option>
-                  <option value="consoles">Consolas</option>
-                  <option value="accesories">Accesorios</option>
+                  <option value="videogames">Videogames</option>
+                  <option value="consoles">Consoles</option>
+                  <option value="accesories">Accessories</option>
                   <option value="merchandising">Merchandising</option>
-                  <option value="components">Componentes</option>
+                  <option value="components">Components</option>
                 </select>
               </div>
               <div className="form-group">
-                <label htmlFor="condition">Estado</label>
+                <label htmlFor="condition">Condition</label>
                 <select
                   id="condition"
                   name="condition"
                   value={formData.condition}
                   onChange={handleInputChange}
                   required
+                  disabled={loading}
                 >
-                  <option value="new">Nuevo</option>
-                  <option value="used">Usado</option>
-                  <option value="refurbished">Reacondicionado</option>
+                  <option value="new">New</option>
+                  <option value="used">Used</option>
+                  <option value="refurbished">Refurbished</option>
                 </select>
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="image">URL de la Imagen</label>
+              <label htmlFor="image">Image URL</label>
               <input
                 type="url"
                 id="image"
@@ -214,21 +221,24 @@ function SellerDashboard() {
                 onChange={handleInputChange}
                 placeholder="https://ejemplo.com/imagen.jpg"
                 required
+                disabled={loading}
               />
             </div>
-            <button type="submit" className="btn-submit">Guardar Producto</button>
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? 'Saving...' : 'Save Product'}
+            </button>
           </form>
         )}
 
         <section className="products-section">
-          <h2>Mis Productos ({userProducts.length})</h2>
+          <h2>My Products ({userProducts.length})</h2>
           {userProducts.length === 0 ? (
             <div className="no-products">
-              <p>No tienes productos en venta aún. ¡Agrega tu primer producto!</p>
+              <p>You don't have any products for sale yet. Add your first product!</p>
             </div>
           ) : (
             <div className="products-grid">
-              {userProducts.map((product) => (
+              {userProducts.map((product: any) => (
                 <div key={product.id} className="product-item">
                   <img src={product.image} alt={product.title} className="product-image" />
                   <div className="product-details">
@@ -248,4 +258,3 @@ function SellerDashboard() {
 }
 
 export default SellerDashboard
-
