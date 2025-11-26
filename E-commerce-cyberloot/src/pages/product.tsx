@@ -21,7 +21,15 @@ function ProductDetail() {
       const arrayProduct = products.find(p => p.id === id)
       const foundProduct = storedProduct || arrayProduct
       if (foundProduct) {
-        setProduct(foundProduct)
+        // Asegurar que el precio sea un número válido y que todos los campos estén presentes
+        const normalizedProduct = {
+          ...foundProduct,
+          title: foundProduct.title || 'Título no disponible',
+          price: typeof foundProduct.price === 'string' 
+            ? parseFloat(foundProduct.price) 
+            : (foundProduct.price ?? 0)
+        }
+        setProduct(normalizedProduct)
       }
 
       const currentUserJson = localStorage.getItem('cyberloot_current_user')
@@ -46,8 +54,13 @@ function ProductDetail() {
     )
   }
 
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+  const formatPrice = (value: number | undefined | null | string) => {
+    // Convertir a número si es string
+    const numValue = typeof value === 'string' ? parseFloat(value) : value
+    if (numValue === undefined || numValue === null || isNaN(numValue) || numValue <= 0) {
+      return 'Precio no disponible'
+    }
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(numValue)
   }
 
   const getConditionLabel = (condition: string) => {
@@ -90,9 +103,9 @@ function ProductDetail() {
           </div>
 
           <div className="product-info-section">
-            <h1 className="product-title">{product.title}</h1>
+            <h1 className="product-title" style={{ color: '#1D1D1B' }}>{product?.title || 'Título no disponible'}</h1>
             
-            <div className="product-price">
+            <div className="product-price" style={{ color: '#1D1D1B' }}>
               {formatPrice(product.price)}
             </div>
 

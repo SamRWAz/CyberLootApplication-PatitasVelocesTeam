@@ -58,15 +58,33 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0;
-  color: #1D1D1B;
+  color: #1D1D1B !important;
   line-height: 1.2;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+.product-title,
+.product-info-section .product-title,
+.product-detail-container .product-title {
+  color: #1D1D1B !important;
 }
 
 .product-price {
   font-size: 2rem;
   font-weight: 700;
-  color: #1D1D1B;
+  color: #1D1D1B !important;
   margin: 1rem 0;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+.product-price,
+.product-info-section .product-price,
+.product-detail-container .product-price {
+  color: #1D1D1B !important;
 }
 
 .product-details-grid {
