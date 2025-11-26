@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { products } from '../components/ProductList'
-import { getProductById } from '../models/Product'
-import type { Product } from '../models/Product'
+import { useAppDispatch, useAppSelector } from '../slices/hooks'
+import { fetchProducts } from '../slices/ProductSlice'
+import { fetchCommentsByProductId } from '../slices/CommentSlice'
 import CommentList from '../components/CommentList'
 import '../styles/pages/product.css'
 import { addToCart } from '../models/User'
@@ -11,43 +11,40 @@ import { getFavorites, toggleFavorite } from '../models/User'
 function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [product, setProduct] = useState<Product | null>(null)
+  const dispatch = useAppDispatch()
+  const { Products } = useAppSelector((state) => state.products)
   const [isFavorite, setIsFavorite] = useState<boolean>(false)
 
-  useEffect(() => {
-    if (id) {
-      // Buscar primero en localStorage, luego en el array de productos
-      const storedProduct = getProductById(id)
-      const arrayProduct = products.find(p => p.id === id)
-      const foundProduct = storedProduct || arrayProduct
-      if (foundProduct) {
-        // Asegurar que el precio sea un número válido y que todos los campos estén presentes
-        const normalizedProduct = {
-          ...foundProduct,
-          title: foundProduct.title || 'Título no disponible',
-          price: typeof foundProduct.price === 'string' 
-            ? parseFloat(foundProduct.price) 
-            : (foundProduct.price ?? 0)
-        }
-        setProduct(normalizedProduct)
-      }
+  // Buscar producto en Redux
+  const product = Products.find(p => p.id === id) as any
 
-      const currentUserJson = localStorage.getItem('cyberloot_current_user')
-      if (currentUserJson && id) {
-        const currentUser = JSON.parse(currentUserJson) as { id: string }
-        const favs = getFavorites(currentUser.id)
-        setIsFavorite(favs.includes(id))
-      } else {
-        setIsFavorite(false)
-      }
+  useEffect(() => {
+    // Cargar productos si no están cargados
+    if (Products.length === 0) {
+      dispatch(fetchProducts())
     }
-  }, [id])
+    
+    // Cargar comentarios del producto
+    if (id) {
+      dispatch(fetchCommentsByProductId(id))
+    }
+
+    // Cargar estado de favorito
+    const currentUserJson = localStorage.getItem('cyberloot_current_user')
+    if (currentUserJson && id) {
+      const currentUser = JSON.parse(currentUserJson) as { id: string }
+      const favs = getFavorites(currentUser.id)
+      setIsFavorite(favs.includes(id))
+    } else {
+      setIsFavorite(false)
+    }
+  }, [id, dispatch, Products.length])
 
   if (!product) {
     return (
       <div className="product-detail-container">
         <div className="container">
-          <p>Product not found</p>
+          <p>Loading product...</p>
           <button onClick={() => navigate('/')}>Back to home</button>
         </div>
       </div>
@@ -55,10 +52,9 @@ function ProductDetail() {
   }
 
   const formatPrice = (value: number | undefined | null | string) => {
-    // Convertir a número si es string
     const numValue = typeof value === 'string' ? parseFloat(value) : value
     if (numValue === undefined || numValue === null || isNaN(numValue) || numValue <= 0) {
-      return 'Precio no disponible'
+      return 'Price not available'
     }
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(numValue)
   }
@@ -103,7 +99,7 @@ function ProductDetail() {
           </div>
 
           <div className="product-info-section">
-            <h1 className="product-title" style={{ color: '#1D1D1B' }}>{product?.title || 'Título no disponible'}</h1>
+            <h1 className="product-title" style={{ color: '#1D1D1B' }}>{product?.title || 'Title not available'}</h1>
             
             <div className="product-price" style={{ color: '#1D1D1B' }}>
               {formatPrice(product.price)}
@@ -124,7 +120,7 @@ function ProductDetail() {
 
               <div className="product-detail-item">
                 <span className="detail-label">Seller:</span>
-                <span className="detail-value seller-name">{product.seller}</span>
+                <span className="detail-value seller-name">{product.seller || 'Unknown seller'}</span>
               </div>
             </div>
 
@@ -139,37 +135,37 @@ function ProductDetail() {
                 className="btn-primary" 
                 onClick={(e) => {
                   e.preventDefault()
-                const currentUserJson = localStorage.getItem('cyberloot_current_user')
-                if (!currentUserJson) {
-                  alert('Inicia sesión para agregar al carrito')
-                  navigate('/login')
-                  return
-                }
-                const currentUser = JSON.parse(currentUserJson) as { id: string }
-                addToCart(currentUser.id, product.id, 1)
-                alert('Producto agregado al carrito')
+                  const currentUserJson = localStorage.getItem('cyberloot_current_user')
+                  if (!currentUserJson) {
+                    alert('Please log in to add to cart')
+                    navigate('/login')
+                    return
+                  }
+                  const currentUser = JSON.parse(currentUserJson) as { id: string }
+                  addToCart(currentUser.id, product.id, 1)
+                    alert('Product added to cart')
                 }}
               >
-                Agregar al carrito
+                Add to Cart
               </button>
-            <button 
-              className="btn-secondary"
-              onClick={(e) => {
-                e.preventDefault()
-                const currentUserJson = localStorage.getItem('cyberloot_current_user')
-                if (!currentUserJson) {
-                  alert('Inicia sesión para gestionar favoritos')
-                  navigate('/login')
-                  return
-                }
-                const currentUser = JSON.parse(currentUserJson) as { id: string }
-                const next = toggleFavorite(currentUser.id, product.id)
-                setIsFavorite(next.includes(product.id))
-              }}
-              aria-label="Favorito"
-            >
-              {isFavorite ? '❤' : '♡'}
-            </button>
+              <button 
+                className="btn-secondary"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const currentUserJson = localStorage.getItem('cyberloot_current_user')
+                  if (!currentUserJson) {
+                    alert('Please log in to manage favorites')
+                    navigate('/login')
+                    return
+                  }
+                  const currentUser = JSON.parse(currentUserJson) as { id: string }
+                  const next = toggleFavorite(currentUser.id, product.id)
+                  setIsFavorite(next.includes(product.id))
+                }}
+                aria-label="Favorite"
+              >
+                {isFavorite ? '❤' : '♡'}
+              </button>
             </div>
           </div>
         </div>
@@ -183,4 +179,3 @@ function ProductDetail() {
 }
 
 export default ProductDetail
-

@@ -1,141 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
-import type { Product } from '../models/Product'
-import { getProductsFromStorage } from '../models/Product'
-import { addToCart, getFavorites, toggleFavorite } from '../models/User'
 import { useEffect, useState } from 'react'
-
-export const products: Product[] = [
-  {
-    id: 'p-1',
-    title: 'Wireless Headphones Pro X',
-    description: 'Immersive sound, noise cancellation, and long-lasting battery.',
-    price: 89.99,
-    image: 'https://picsum.photos/seed/audio-auriculares/800/600',
-    seller: 'Brian Moser',
-    category: 'accesories',
-    condition: 'new'
-  },
-  {
-    id: 'p-2',
-    title: 'Retro Mini Console',
-    description: 'Relive classics with HDMI output and 2 controllers included.',
-    price: 129.5,
-    image: 'https://picsum.photos/seed/consola-retro/800/600',
-    seller: 'Dexter Morgan',
-    category: 'consoles',
-    condition: 'used'
-  },
-  {
-    id: 'p-3',
-    title: 'PC Gamer Upgrade Kit',
-    description: 'Memory, NVMe SSD, and RGB cooling pack to boost your rig.',
-    price: 159.0,
-    image: 'https://picsum.photos/seed/pc-upgrade/800/600',
-    seller: 'Debra Morgan',
-    category: 'components',
-    condition: 'new'
-  },
-  {
-    id: 'p-4',
-    title: 'Cyberpunk 2077 - Collector\'s Edition',
-    description: 'Complete edition with steelbook, artbook, and exclusive figurine.',
-    price: 149.99,
-    image: 'https://picsum.photos/seed/cyberpunk-game/800/600',
-    seller: 'Rita Bennett',
-    category: 'videogames',
-    condition: 'new'
-  },
-  {
-    id: 'p-5',
-    title: 'PlayStation 5 Console',
-    description: 'Next-gen gaming console with 4K gaming and ray tracing support.',
-    price: 499.99,
-    image: 'https://picsum.photos/seed/ps5-console/800/600',
-    seller: 'James Doakes',
-    category: 'consoles',
-    condition: 'refurbished'
-  },
-  {
-    id: 'p-6',
-    title: 'Gaming Mechanical Keyboard RGB',
-    description: 'Mechanical switches, customizable RGB lighting, and wrist rest included.',
-    price: 129.99,
-    image: 'https://picsum.photos/seed/keyboard-gaming/800/600',
-    seller: 'Maria LaGuerta',
-    category: 'accesories',
-    condition: 'new'
-  },
-  {
-    id: 'p-7',
-    title: 'Official Gaming T-Shirt Collection',
-    description: 'Premium cotton t-shirts with your favorite game characters.',
-    price: 29.99,
-    image: 'https://picsum.photos/seed/gaming-tshirt/800/600',
-    seller: 'Angel Batista',
-    category: 'merchandising',
-    condition: 'new'
-  },
-  {
-    id: 'p-8',
-    title: 'NVIDIA RTX 4080 Graphics Card',
-    description: 'High-performance GPU with 16GB VRAM for 4K gaming and streaming.',
-    price: 1199.99,
-    image: 'https://picsum.photos/seed/rtx4080/800/600',
-    seller: 'Vince Masuka',
-    category: 'components',
-    condition: 'used'
-  },
-  {
-    id: 'p-9',
-    title: 'The Legend of Zelda: Tears of the Kingdom',
-    description: 'Latest adventure in the Zelda series for Nintendo Switch.',
-    price: 59.99,
-    image: 'https://picsum.photos/seed/zelda-game/800/600',
-    seller: 'Lila Tournay',
-    category: 'videogames',
-    condition: 'new'
-  },
-  {
-    id: 'p-10',
-    title: 'Xbox Series X Controller',
-    description: 'Wireless controller with textured grips and improved ergonomics.',
-    price: 69.99,
-    image: 'https://picsum.photos/seed/xbox-controller/800/600',
-    seller: 'Paul Bennett',
-    category: 'accesories',
-    condition: 'new'
-  },
-  {
-    id: 'p-11',
-    title: 'Gaming Mouse Pad XL',
-    description: 'Large RGB mouse pad with smooth surface and customizable lighting.',
-    price: 39.99,
-    image: 'https://picsum.photos/seed/mousepad/800/600',
-    seller: 'Frank Lundy',
-    category: 'accesories',
-    condition: 'new'
-  },
-  {
-    id: 'p-12',
-    title: 'Elden Ring - Deluxe Edition',
-    description: 'Action RPG masterpiece with exclusive digital content and soundtrack.',
-    price: 79.99,
-    image: 'https://picsum.photos/seed/elden-ring/800/600',
-    seller: 'Miguel Prado',
-    category: 'videogames',
-    condition: 'used'
-  },
-  {
-    id: 'p-13',
-    title: 'Nintendo Switch OLED Model',
-    description: 'Enhanced Switch with vibrant OLED screen and improved audio.',
-    price: 349.99,
-    image: 'https://picsum.photos/seed/switch-oled/800/600',
-    seller: 'Anton Briggs',
-    category: 'consoles',
-    condition: 'refurbished'
-  }
-]
+import { useAppDispatch, useAppSelector } from '../slices/hooks'
+import { fetchProducts } from '../slices/ProductSlice'
+import { addToCart, getFavorites, toggleFavorite } from '../models/User'
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(value)
@@ -152,8 +19,16 @@ interface ProductListProps {
 
 function ProductList({ category, title = 'Featured products', searchQuery, conditionFilter, priceRange, sortBy }: ProductListProps) {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const { Products, loading, error } = useAppSelector((state) => state.products)
   const [favoriteIds, setFavoriteIds] = useState<string[]>([])
 
+  // Cargar productos al montar el componente
+  useEffect(() => {
+    dispatch(fetchProducts())
+  }, [dispatch])
+
+  // Cargar favoritos
   useEffect(() => {
     const loadFavorites = () => {
       const currentUserJson = localStorage.getItem('cyberloot_current_user')
@@ -174,7 +49,6 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
 
     loadFavorites()
 
-    // Escuchar cambios en localStorage para actualizar favoritos
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key?.startsWith('cyberloot_favorites_')) {
         loadFavorites()
@@ -182,8 +56,6 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
     }
 
     window.addEventListener('storage', handleStorageChange)
-    
-    // Verificar periódicamente (por si el cambio fue en la misma pestaña)
     const interval = setInterval(loadFavorites, 1000)
 
     return () => {
@@ -191,35 +63,58 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
       clearInterval(interval)
     }
   }, [])
-  const storedProducts = getProductsFromStorage()
-  const combined: Product[] = [...storedProducts, ...products].reduce<Product[]>((acc, p) => {
-    if (!acc.find(x => x.id === p.id)) acc.push(p)
-    return acc
-  }, [])
 
-  let filteredProducts = combined
+  // Filtrar productos
+  let filteredProducts = Products as any[]
+  
   if (category) {
     filteredProducts = filteredProducts.filter(product => product.category === category)
   }
+  
   if (searchQuery && searchQuery.trim().length > 0) {
     const q = searchQuery.trim().toLowerCase()
     filteredProducts = filteredProducts.filter(p => 
       p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
     )
   }
+  
   if (conditionFilter) {
     filteredProducts = filteredProducts.filter(p => p.condition === conditionFilter)
   }
+  
   if (priceRange) {
     if (priceRange === '0-50') filteredProducts = filteredProducts.filter(p => p.price >= 0 && p.price < 50)
     if (priceRange === '50-100') filteredProducts = filteredProducts.filter(p => p.price >= 50 && p.price < 100)
     if (priceRange === '100-200') filteredProducts = filteredProducts.filter(p => p.price >= 100 && p.price < 200)
     if (priceRange === '200+') filteredProducts = filteredProducts.filter(p => p.price >= 200)
   }
+  
   if (sortBy === 'price-low') {
     filteredProducts = [...filteredProducts].sort((a, b) => a.price - b.price)
   } else if (sortBy === 'price-high') {
     filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price)
+  }
+
+  if (loading) {
+    return (
+      <section className="container" style={{ padding: '2rem 0' }}>
+        <h2 style={{ marginBottom: '1rem' }}>{title}</h2>
+        <p style={{ color: '#d1d5db', textAlign: 'center', padding: '2rem' }}>
+          Loading products...
+        </p>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section className="container" style={{ padding: '2rem 0' }}>
+        <h2 style={{ marginBottom: '1rem' }}>{title}</h2>
+        <p style={{ color: '#ef4444', textAlign: 'center', padding: '2rem' }}>
+          Error loading products: {error}
+        </p>
+      </section>
+    )
   }
 
   if (filteredProducts.length === 0) {
@@ -227,7 +122,7 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
       <section className="container" style={{ padding: '2rem 0' }}>
         <h2 style={{ marginBottom: '1rem' }}>{title}</h2>
         <p style={{ color: '#d1d5db', textAlign: 'center', padding: '2rem' }}>
-          No hay productos disponibles en esta categoría.
+          No products available in this category.
         </p>
       </section>
     )
@@ -243,14 +138,13 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
           gap: '24px'
         }}
       >
-        {filteredProducts.map((product) => (
+        {filteredProducts.map((product: any) => (
           <Link
             key={product.id}
             to={`/product/${product.id}`}
-            onClick={(e) => {
-              // Si el clic fue en el botón de favoritos o en su contenido, no navegar
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
               const target = e.target as HTMLElement
-              const favoriteButton = target.closest('button[aria-label="Favorito"]')
+              const favoriteButton = target.closest('button[aria-label="Favorite"]')
               if (favoriteButton) {
                 e.preventDefault()
                 e.stopPropagation()
@@ -272,11 +166,11 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
               textDecoration: 'none',
               display: 'block'
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
               e.currentTarget.style.transform = 'translateY(-4px)'
               e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.35)'
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
               e.currentTarget.style.transform = 'translateY(0)'
               e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)'
             }}
@@ -314,12 +208,9 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                       return
                     }
                     
-                    console.log('Toggling favorite for product:', product.id, 'User:', currentUser.id)
                     const next = toggleFavorite(currentUser.id, product.id)
-                    console.log('New favorites:', next)
-                    setFavoriteIds([...next]) // Crear nueva array para forzar re-render
+                    setFavoriteIds([...next])
                     
-                    // Forzar actualización inmediata
                     setTimeout(() => {
                       const updated = getFavorites(currentUser.id)
                       setFavoriteIds([...updated])
@@ -339,7 +230,7 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                   e.preventDefault()
                   e.stopPropagation()
                 }}
-                aria-label="Favorito"
+                aria-label="Favorite"
                 style={{
                   position: 'absolute',
                   bottom: '8px',
@@ -387,7 +278,7 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                   fontSize: '0.85rem',
                   fontStyle: 'italic'
                 }}>
-                  Vendido por: {product.seller}
+                  Sold by: {product.seller || 'Unknown seller'}
                 </span>
                 <button
                   onClick={(e) => {
@@ -395,13 +286,13 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                     e.stopPropagation()
                     const currentUserJson = localStorage.getItem('cyberloot_current_user')
                     if (!currentUserJson) {
-                      alert('Inicia sesión para agregar al carrito')
+                      alert('Please log in to add to cart')
                       navigate('/login')
                       return
                     }
                     const currentUser = JSON.parse(currentUserJson) as { id: string }
                     addToCart(currentUser.id, product.id, 1)
-                    alert('Producto agregado al carrito')
+                    alert('Product added to cart')
                   }}
                   style={{
                     marginTop: 10,
@@ -415,7 +306,7 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                     borderRadius: 4
                   }}
                 >
-                  Agregar al carrito
+                  Add to Cart
                 </button>
               </div>
             </div>
@@ -427,5 +318,3 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
 }
 
 export default ProductList
-
-

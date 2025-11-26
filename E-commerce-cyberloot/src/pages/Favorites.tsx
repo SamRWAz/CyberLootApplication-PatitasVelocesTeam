@@ -1,74 +1,41 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../slices/hooks'
+import { fetchProducts } from '../slices/ProductSlice'
 import { getFavorites } from '../models/User'
-import { getProductById, getProductsFromStorage } from '../models/Product'
-import type { Product } from '../models/Product'
-import { products as predefinedProducts } from '../components/ProductList'
 
 function Favorites() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const { Products } = useAppSelector((state) => state.products)
   const [userId, setUserId] = useState<string | null>(null)
-  const [favProducts, setFavProducts] = useState<Product[]>([])
 
   useEffect(() => {
-    const loadFavorites = () => {
-      const currentUserJson = localStorage.getItem('cyberloot_current_user')
-      if (!currentUserJson) {
-        navigate('/login')
-        return
-      }
-      const currentUser = JSON.parse(currentUserJson) as { id: string }
-      setUserId(currentUser.id)
-      
-      const favIds = getFavorites(currentUser.id)
-      
-      // Combinar productos de localStorage y productos predefinidos
-      const storedProducts = getProductsFromStorage()
-      const allProducts = [...predefinedProducts, ...storedProducts].reduce<Product[]>((acc, p) => {
-        if (!acc.find(x => x.id === p.id)) acc.push(p)
-        return acc
-      }, [])
-      
-      // Buscar productos favoritos en ambos lugares
-      const products = favIds
-        .map(id => {
-          // Buscar primero en productos predefinidos
-          const predefined = predefinedProducts.find(p => p.id === id)
-          if (predefined) return predefined
-          
-          // Si no está en predefinidos, buscar en localStorage
-          return getProductById(id)
-        })
-        .filter(Boolean) as Product[]
-      
-      setFavProducts(products)
+    // Cargar productos si no están cargados
+    if (Products.length === 0) {
+      dispatch(fetchProducts())
     }
 
-    loadFavorites()
-
-    // Escuchar cambios en localStorage para actualizar favoritos
-    const handleStorageChange = () => {
-      loadFavorites()
+    const currentUserJson = localStorage.getItem('cyberloot_current_user')
+    if (!currentUserJson) {
+      navigate('/login')
+      return
     }
+    const currentUser = JSON.parse(currentUserJson) as { id: string }
+    setUserId(currentUser.id)
+  }, [navigate, dispatch, Products.length])
 
-    window.addEventListener('storage', handleStorageChange)
-    
-    // Verificar periódicamente (por si el cambio fue en la misma pestaña)
-    const interval = setInterval(loadFavorites, 1000)
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      clearInterval(interval)
-    }
-  }, [navigate])
+  // Obtener productos favoritos desde Redux
+  const favIds = userId ? getFavorites(userId) : []
+  const favProducts = Products.filter(p => favIds.includes(p.id)) as any[]
 
   if (userId === null) return null
 
   return (
     <section className="container" style={{ padding: '2rem 0' }}>
-      <h2 style={{ marginBottom: '1rem' }}>Mis favoritos</h2>
+      <h2 style={{ marginBottom: '1rem' }}>My Favorites</h2>
       {favProducts.length === 0 ? (
-        <p style={{ color: '#d1d5db' }}>No tienes productos favoritos aún.</p>
+        <p style={{ color: '#d1d5db' }}>You don't have any favorite products yet.</p>
       ) : (
         <div
           style={{
@@ -110,6 +77,9 @@ function Favorites() {
                 <p style={{ margin: '8px 0 12px', color: '#d1d5db', fontSize: '.95rem', lineHeight: 1.5 }}>
                   {product.description}
                 </p>
+                <div style={{ color: '#fff', fontWeight: 700 }}>
+                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(product.price)}
+                </div>
               </div>
             </Link>
           ))}
@@ -120,5 +90,3 @@ function Favorites() {
 }
 
 export default Favorites
-
-

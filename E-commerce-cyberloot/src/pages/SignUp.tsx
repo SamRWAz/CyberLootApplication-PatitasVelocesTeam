@@ -3,26 +3,25 @@ import '../styles/pages/signup.css'
 import loginImage from '../assets/LogIn.jpeg'
 import logo from '../assets/LogoEc.png'
 import { Link, useNavigate } from 'react-router-dom'
-import { createUser, saveUserToStorage, getUserByEmail, getUserByUsername } from '../models/User'
+import { signUp } from '../utils/auth'
 
 function SignUp() {
   const navigate = useNavigate()
   const [photoPreview, setPhotoPreview] = useState<string>('')
   const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Validar que sea una imagen
       if (!file.type.startsWith('image/')) {
-        setError('Por favor, selecciona un archivo de imagen válido')
+        setError('Please select a valid image file')
         return
       }
       
-      // Validar tamaño (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setError('La imagen debe ser menor a 5MB')
+        setError('Image must be less than 5MB')
         return
       }
 
@@ -35,9 +34,10 @@ function SignUp() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
 
     const formData = new FormData(e.currentTarget)
     const fullName = formData.get('fullname') as string
@@ -51,60 +51,50 @@ function SignUp() {
 
     // Validaciones
     if (!fullName || !email || !username || !password || !phone || !address || !location) {
-      setError('Por favor, completa todos los campos')
+      setError('Please fill in all fields')
+      setLoading(false)
       return
     }
 
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden')
+      setError('Passwords do not match')
+      setLoading(false)
       return
     }
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
-      return
-    }
-
-    // Verificar si el email ya existe
-    if (getUserByEmail(email)) {
-      setError('Este email ya está registrado')
-      return
-    }
-
-    // Verificar si el username ya existe
-    if (getUserByUsername(username)) {
-      setError('Este nombre de usuario ya está en uso')
+      setError('Password must be at least 6 characters')
+      setLoading(false)
       return
     }
 
     // Validar foto
     if (!photoPreview) {
-      setError('Por favor, sube una foto de perfil')
+      setError('Please upload a profile photo')
+      setLoading(false)
       return
     }
 
-    // Crear usuario
-    const newUser = createUser(
-      username,
-      email,
-      fullName,
-      password,
-      photoPreview,
-      {
+    try {
+      // Crear usuario con Supabase Auth
+      const { user } = await signUp(email, password, {
+        username,
+        fullName,
+        photo: photoPreview,
         phone,
         address,
-        location
-      }
-    )
+        location,
+      })
 
-    // Guardar usuario
-    saveUserToStorage(newUser)
+      // Guardar usuario actual en sesión
+      localStorage.setItem('cyberloot_current_user', JSON.stringify(user))
 
-    // Guardar usuario actual en sesión
-    localStorage.setItem('cyberloot_current_user', JSON.stringify(newUser))
-
-    // Redirigir al perfil
-    navigate('/profile')
+      // Redirigir al perfil
+      navigate('/profile')
+    } catch (err: any) {
+      setError(err.message || 'Error creating account')
+      setLoading(false)
+    }
   }
 
   return (
@@ -121,7 +111,7 @@ function SignUp() {
           {error && <div className="error-message">{error}</div>}
           <form className="signup-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="photo">Foto de Perfil</label>
+              <label htmlFor="photo">Profile Photo</label>
               <div className="photo-upload-container">
                 {photoPreview ? (
                   <div className="photo-preview">
@@ -131,7 +121,7 @@ function SignUp() {
                       className="change-photo-btn"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      Cambiar foto
+                      Change photo
                     </button>
                   </div>
                 ) : (
@@ -140,7 +130,7 @@ function SignUp() {
                     className="upload-photo-btn"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    Subir foto
+                    Upload photo
                   </button>
                 )}
                 <input
@@ -156,37 +146,39 @@ function SignUp() {
             </div>
             <div className="form-group">
               <label htmlFor="fullname">Full Name</label>
-              <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required />
+              <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required disabled={loading} />
             </div>
             <div className="form-group">
               <label htmlFor="email">Email</label>
-              <input type="email" id="email" name="email" placeholder="Enter your email" required />
+              <input type="email" id="email" name="email" placeholder="Enter your email" required disabled={loading} />
             </div>
             <div className="form-group">
               <label htmlFor="username">Username</label>
-              <input type="text" id="username" name="username" placeholder="Enter your username" required />
+              <input type="text" id="username" name="username" placeholder="Enter your username" required disabled={loading} />
             </div>
             <div className="form-group">
               <label htmlFor="phone">Phone</label>
-              <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required />
+              <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required disabled={loading} />
             </div>
             <div className="form-group">
               <label htmlFor="address">Address</label>
-              <input type="text" id="address" name="address" placeholder="Enter your address" required />
+              <input type="text" id="address" name="address" placeholder="Enter your address" required disabled={loading} />
             </div>
             <div className="form-group">
               <label htmlFor="location">Location</label>
-              <input type="text" id="location" name="location" placeholder="Enter your location" required />
+              <input type="text" id="location" name="location" placeholder="Enter your location" required disabled={loading} />
             </div>
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <input type="password" id="password" name="password" placeholder="Enter your password" required />
+              <input type="password" id="password" name="password" placeholder="Enter your password" required disabled={loading} />
             </div>
             <div className="form-group">
               <label htmlFor="confirm-password">Confirm Password</label>
-              <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required />
+              <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required disabled={loading} />
             </div>
-            <button type="submit" className="btn-submit">Create Account</button>
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
             <p className="signup-login-link">
               Already have an account? <Link to="/login">Log in</Link>
             </p>
@@ -198,4 +190,3 @@ function SignUp() {
 }
 
 export default SignUp
-
