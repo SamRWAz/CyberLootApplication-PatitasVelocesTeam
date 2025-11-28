@@ -41,7 +41,7 @@ function CategoryPageTemplate({ baseCategory, title, description }: CategoryPage
         <p>{description}</p>
         <ProductList
           title={title}
-          category={effectiveCategory}
+          category={effectiveCategory || undefined}
           conditionFilter={conditionFilter}
           priceRange={priceRange}
           sortBy={sortBy}

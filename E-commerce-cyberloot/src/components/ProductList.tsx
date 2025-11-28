@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useEffect, type MouseEvent as ReactMouseEvent } from 'react'
 import { useAppDispatch, useAppSelector } from '../slices/hooks'
 import { fetchProducts } from '../slices/ProductSlice'
 import { addToCart } from '../slices/CartSlice'
@@ -23,7 +23,6 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
   const dispatch = useAppDispatch()
   const { Products, loading, error } = useAppSelector((state) => state.products)
   const { Favorites } = useAppSelector((state) => state.favorites)
-  const [userId, setUserId] = useState<string | null>(null)
 
   // Cargar productos al montar el componente
   useEffect(() => {
@@ -37,15 +36,11 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
       try {
         const currentUser = JSON.parse(currentUserJson) as { id: string }
         if (currentUser.id) {
-          setUserId(currentUser.id)
           dispatch(fetchFavoritesByUserId(currentUser.id))
         }
       } catch (e) {
         console.error('Error loading user:', e)
-        setUserId(null)
       }
-    } else {
-      setUserId(null)
     }
   }, [dispatch])
 
