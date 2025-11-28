@@ -1,0 +1,124 @@
+.filter-bar {
+  background: var(--surface-strong);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 280px;
+  min-height: calc(100vh - 80px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+  box-shadow: var(--shadow-soft);
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.filter-item label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.filter-select,
+.filter-input {
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  width: 100%;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+/* Estilos para las opciones del select */
+.filter-select option {
+  background-color: var(--surface-strong);
+  color: var(--text-primary);
+  padding: 0.5rem;
+}
+
+/* Para navegadores que soportan estilos de opciones en el dropdown */
+.filter-select:focus option:checked {
+  background-color: rgba(125, 211, 252, 0.2);
+  color: var(--text-primary);
+}
+
+.filter-select:focus,
+.filter-input:focus {
+  outline: none;
+  border-color: rgba(125, 211, 252, 0.5);
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+.filter-select:hover,
+.filter-input:hover {
+  border-color: rgba(192, 132, 252, 0.5);
+}
+
+.filter-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-apply-filters {
+  padding: 0.85rem 1.5rem;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
+  color: #050510;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  width: 100%;
+  margin-top: 0.5rem;
+  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.35);
+}
+
+.btn-apply-filters:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 26px rgba(2, 6, 23, 0.4);
+}
+
+.btn-apply-filters:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .filter-bar {
+    width: 240px;
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-bar {
+    width: 220px;
+    padding: 1rem;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .filter-bar {
+    width: 100%;
+    min-height: auto;
+    position: relative;
+    top: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1rem;
+  }
+}
