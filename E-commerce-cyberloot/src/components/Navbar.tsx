@@ -4,7 +4,7 @@ import logo from '../assets/LogoEc.png'
 import searchIcon from '../assets/Search.png'
 import { Link, useNavigate } from 'react-router-dom'
 import type { User } from '../models/User'
-import { getCurrentUser, onAuthStateChange } from '../utils/auth'
+import { onAuthStateChange } from '../utils/auth'
 
 function Navbar() {
   const [user, setUser] = useState<User | null>(null)
