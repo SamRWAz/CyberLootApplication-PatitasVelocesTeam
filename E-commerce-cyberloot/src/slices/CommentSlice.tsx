@@ -83,6 +83,12 @@ export const deleteComment = createAsyncThunk('Comments/deleteComment', async (c
   return commentId;
 });
 
+// DELETE ALL - Eliminar todos los comentarios de un usuario
+export const deleteAllCommentsByUserId = createAsyncThunk('Comments/deleteAllCommentsByUserId', async (userId: string) => {
+  await axiosInstance.delete(`Comment?user_id=eq.${userId}`);
+  return userId;
+});
+
 // UPDATE
 export const updateComment = createAsyncThunk('Comments/updateComment', async (comment: Comment) => {
   const { id, ...updateData } = comment;
@@ -135,6 +141,9 @@ const CommentsSlice = createSlice({
         if (index !== -1) {
           state.Comments[index] = action.payload;
         }
+      })
+      .addCase(deleteAllCommentsByUserId.fulfilled, (state, action: PayloadAction<string>) => {
+        state.Comments = state.Comments.filter(comment => comment.user_id !== action.payload);
       });
   },
 });

@@ -92,6 +92,12 @@ export const deleteProduct = createAsyncThunk('Products/deleteProduct', async (p
   return productId;
 });
 
+// DELETE ALL - Eliminar todos los productos de un usuario
+export const deleteAllProductsByUserId = createAsyncThunk('Products/deleteAllProductsByUserId', async (userId: string) => {
+  await axiosInstance.delete(`Product?user_id=eq.${userId}`);
+  return userId;
+});
+
 // UPDATE
 export const updateProduct = createAsyncThunk('Products/updateProduct', async (product: Product) => {
   const { id, ...updateData } = product;
@@ -143,6 +149,9 @@ const ProductsSlice = createSlice({
         if (index !== -1) {
           state.Products[index] = action.payload;
         }
+      })
+      .addCase(deleteAllProductsByUserId.fulfilled, (state, action: PayloadAction<string>) => {
+        state.Products = state.Products.filter(product => product.user_id !== action.payload);
       });
   },
 });

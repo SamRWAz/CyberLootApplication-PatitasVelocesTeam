@@ -27,16 +27,22 @@ function Login() {
     }
 
     try {
+      console.log('Starting login process...');
       // Autenticar con Supabase Auth
       const { user } = await signIn(email, password)
+      console.log('Login successful, saving user to localStorage...');
 
       // Guardar usuario actual en sesión
       localStorage.setItem('cyberloot_current_user', JSON.stringify(user))
+      console.log('User saved, navigating to profile...');
 
       // Redirigir al perfil
       navigate('/profile')
     } catch (err: any) {
-      setError(err.message || 'Incorrect email or password')
+      console.error('Login error:', err);
+      const errorMessage = err?.message || 'Incorrect email or password. Please try again.';
+      setError(errorMessage);
+      console.error('Error message set:', errorMessage);
     } finally {
       setLoading(false)
     }

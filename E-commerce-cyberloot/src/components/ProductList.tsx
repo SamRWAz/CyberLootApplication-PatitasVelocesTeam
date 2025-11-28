@@ -2,7 +2,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { useAppDispatch, useAppSelector } from '../slices/hooks'
 import { fetchProducts } from '../slices/ProductSlice'
-import { addToCart, getFavorites, toggleFavorite } from '../models/User'
+import { addToCart } from '../slices/CartSlice'
+import { fetchFavoritesByUserId, toggleFavorite } from '../slices/FavoriteSlice'
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(value)
@@ -21,48 +22,35 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { Products, loading, error } = useAppSelector((state) => state.products)
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([])
+  const { Favorites } = useAppSelector((state) => state.favorites)
+  const [userId, setUserId] = useState<string | null>(null)
 
   // Cargar productos al montar el componente
   useEffect(() => {
     dispatch(fetchProducts())
   }, [dispatch])
 
-  // Cargar favoritos
+  // Cargar favoritos desde la base de datos
   useEffect(() => {
-    const loadFavorites = () => {
-      const currentUserJson = localStorage.getItem('cyberloot_current_user')
-      if (currentUserJson) {
-        try {
-          const currentUser = JSON.parse(currentUserJson) as { id: string }
-          if (currentUser.id) {
-            setFavoriteIds(getFavorites(currentUser.id))
-          }
-        } catch (e) {
-          console.error('Error loading favorites:', e)
-          setFavoriteIds([])
+    const currentUserJson = localStorage.getItem('cyberloot_current_user')
+    if (currentUserJson) {
+      try {
+        const currentUser = JSON.parse(currentUserJson) as { id: string }
+        if (currentUser.id) {
+          setUserId(currentUser.id)
+          dispatch(fetchFavoritesByUserId(currentUser.id))
         }
-      } else {
-        setFavoriteIds([])
+      } catch (e) {
+        console.error('Error loading user:', e)
+        setUserId(null)
       }
+    } else {
+      setUserId(null)
     }
+  }, [dispatch])
 
-    loadFavorites()
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key?.startsWith('cyberloot_favorites_')) {
-        loadFavorites()
-      }
-    }
-
-    window.addEventListener('storage', handleStorageChange)
-    const interval = setInterval(loadFavorites, 1000)
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      clearInterval(interval)
-    }
-  }, [])
+  // Obtener IDs de productos favoritos
+  const favoriteIds = Favorites.map(f => f.product_id)
 
   // Filtrar productos
   let filteredProducts = Products as any[]
@@ -208,13 +196,15 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                       return
                     }
                     
-                    const next = toggleFavorite(currentUser.id, product.id)
-                    setFavoriteIds([...next])
-                    
-                    setTimeout(() => {
-                      const updated = getFavorites(currentUser.id)
-                      setFavoriteIds([...updated])
-                    }, 100)
+                    dispatch(toggleFavorite({ user_id: currentUser.id, product_id: product.id }))
+                      .then(() => {
+                        // Recargar favoritos para actualizar el estado
+                        dispatch(fetchFavoritesByUserId(currentUser.id))
+                      })
+                      .catch((error) => {
+                        console.error('Error toggling favorite:', error)
+                        alert('Error managing favorites. Please try again.')
+                      })
                   } catch (error) {
                     console.error('Error toggling favorite:', error)
                     alert('Error managing favorites. Please try again.')
@@ -238,15 +228,22 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  background: favoriteIds.includes(product.id) ? 'rgba(220, 38, 38, 0.9)' : 'rgba(0, 0, 0, 0.6)',
-                  border: 'none',
+                  background: favoriteIds.includes(product.id) 
+                    ? 'linear-gradient(135deg, rgba(125, 211, 252, 0.9), rgba(192, 132, 252, 0.9))' 
+                    : 'rgba(0, 0, 0, 0.6)',
+                  border: favoriteIds.includes(product.id) 
+                    ? '1px solid rgba(192, 132, 252, 0.5)' 
+                    : 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   backdropFilter: 'blur(4px)',
-                  zIndex: 10
+                  zIndex: 10,
+                  boxShadow: favoriteIds.includes(product.id) 
+                    ? '0 4px 12px rgba(192, 132, 252, 0.3)' 
+                    : 'none'
                 }}
               >
                 <span style={{ 
@@ -291,8 +288,14 @@ function ProductList({ category, title = 'Featured products', searchQuery, condi
                       return
                     }
                     const currentUser = JSON.parse(currentUserJson) as { id: string }
-                    addToCart(currentUser.id, product.id, 1)
-                    alert('Product added to cart')
+                    dispatch(addToCart({ user_id: currentUser.id, product_id: product.id, quantity: 1 }))
+                      .then(() => {
+                        alert('Product added to cart')
+                      })
+                      .catch((error) => {
+                        console.error('Error adding to cart:', error)
+                        alert('Error adding product to cart. Please try again.')
+                      })
                   }}
                   style={{
                     marginTop: 10,

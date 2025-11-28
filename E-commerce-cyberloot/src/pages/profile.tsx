@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../slices/hooks'
 import { updateUser, deleteUser, fetchUsers } from '../slices/UserSlice'
-import { updateProduct, deleteProduct, fetchProductsByUserId } from '../slices/ProductSlice'
+import { updateProduct, deleteProduct, fetchProductsByUserId, deleteAllProductsByUserId } from '../slices/ProductSlice'
+import { clearCart } from '../slices/CartSlice'
+import { removeAllFavoritesByUserId } from '../slices/FavoriteSlice'
+import { deleteAllCommentsByUserId } from '../slices/CommentSlice'
+import { signOut } from '../utils/auth'
+import { supabase } from '../config/supabase'
 import '../styles/pages/profile.css'
 import type { User } from '../models/User'
 import type { Product } from '../models/Product'
@@ -79,15 +84,71 @@ function Profile() {
   const handleDeleteAccount = async () => {
     if (!user) return
 
-    const ok = window.confirm('Are you sure you want to delete your account? This action cannot be undone.')
+    const ok = window.confirm('Are you sure you want to delete your account? This action cannot be undone. All your products, cart items, favorites, and comments will be deleted.')
     if (!ok) return
 
     try {
+      console.log('Starting account deletion process...')
+      
+      // 1. Eliminar todos los productos del usuario
+      console.log('Deleting all user products...')
+      try {
+        await dispatch(deleteAllProductsByUserId(user.id)).unwrap()
+        console.log('All products deleted')
+      } catch (err) {
+        console.error('Error deleting products:', err)
+      }
+
+      // 2. Eliminar todos los comentarios del usuario
+      console.log('Deleting all user comments...')
+      try {
+        await dispatch(deleteAllCommentsByUserId(user.id)).unwrap()
+        console.log('All comments deleted')
+      } catch (err) {
+        console.error('Error deleting comments:', err)
+      }
+
+      // 3. Eliminar todos los favoritos del usuario
+      console.log('Deleting all user favorites...')
+      try {
+        await dispatch(removeAllFavoritesByUserId(user.id)).unwrap()
+        console.log('All favorites deleted')
+      } catch (err) {
+        console.error('Error deleting favorites:', err)
+      }
+
+      // 4. Limpiar el carrito del usuario
+      console.log('Clearing user cart...')
+      try {
+        await dispatch(clearCart(user.id)).unwrap()
+        console.log('Cart cleared')
+      } catch (err) {
+        console.error('Error clearing cart:', err)
+      }
+
+      // 5. Eliminar el usuario de la tabla User
+      console.log('Deleting user from User table...')
       await dispatch(deleteUser(user.id)).unwrap()
+      console.log('User deleted from User table')
+
+      // 6. Hacer signOut de Supabase Auth (no podemos eliminar usuarios desde el cliente sin admin key)
+      console.log('Signing out from Supabase Auth...')
+      try {
+        await supabase.auth.signOut()
+        console.log('Signed out from Supabase Auth')
+      } catch (authErr) {
+        console.error('Error signing out:', authErr)
+      }
+
+      // 7. Limpiar localStorage
       localStorage.removeItem('cyberloot_current_user')
+      console.log('Account deletion completed')
+      
+      // 8. Redirigir al login
       navigate('/login')
     } catch (err) {
-      alert('Error deleting account')
+      console.error('Error deleting account:', err)
+      alert('Error deleting account. Please try again.')
     }
   }
 
@@ -146,13 +207,23 @@ function Profile() {
   }
 
   const handleLogout = async () => {
-    try {
-      const { signOut } = await import('../utils/auth')
-      await signOut()
-    } catch (error) {
-      console.error('Error signing out:', error)
+    console.log('Initiating logout...')
+    
+    // Limpiar estado de Redux (carrito) de forma no bloqueante
+    if (user) {
+      dispatch(clearCart(user.id)).unwrap().catch((err) => {
+        console.error('Error clearing cart:', err)
+      })
     }
+    
+    // Hacer signOut de Supabase en segundo plano (no bloqueante)
+    signOut().catch((error) => {
+      console.error('Error signing out (non-blocking):', error)
+    })
+    
+    // Limpiar localStorage y redirigir inmediatamente (no esperar a signOut)
     localStorage.removeItem('cyberloot_current_user')
+    console.log('Local storage cleared, navigating to home')
     navigate('/')
   }
 
@@ -350,7 +421,7 @@ function Profile() {
                   </button>
                 )}
                 <button 
-                  className="btn-add-product"
+                  className="btn-logout"
                   onClick={() => navigate('/favorites')}
                 >
                   View Favorites

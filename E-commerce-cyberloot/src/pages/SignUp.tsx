@@ -27,8 +27,48 @@ function SignUp() {
 
       const reader = new FileReader()
       reader.onloadend = () => {
-        setPhotoPreview(reader.result as string)
-        setError('')
+        const result = reader.result as string
+        // Comprimir la imagen si es muy grande (más de 500KB en base64)
+        if (result.length > 500000) {
+          // Crear una imagen para redimensionarla
+          const img = new Image()
+          img.onload = () => {
+            const canvas = document.createElement('canvas')
+            const maxWidth = 800
+            const maxHeight = 800
+            let width = img.width
+            let height = img.height
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = (height * maxWidth) / width
+                width = maxWidth
+              }
+            } else {
+              if (height > maxHeight) {
+                width = (width * maxHeight) / height
+                height = maxHeight
+              }
+            }
+
+            canvas.width = width
+            canvas.height = height
+            const ctx = canvas.getContext('2d')
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height)
+              const compressed = canvas.toDataURL('image/jpeg', 0.7)
+              setPhotoPreview(compressed)
+              setError('')
+            } else {
+              setPhotoPreview(result)
+              setError('')
+            }
+          }
+          img.src = result
+        } else {
+          setPhotoPreview(result)
+          setError('')
+        }
       }
       reader.readAsDataURL(file)
     }
@@ -39,43 +79,43 @@ function SignUp() {
     setError('')
     setLoading(true)
 
-    const formData = new FormData(e.currentTarget)
-    const fullName = formData.get('fullname') as string
-    const email = formData.get('email') as string
-    const username = formData.get('username') as string
-    const password = formData.get('password') as string
-    const confirmPassword = formData.get('confirm-password') as string
-    const phone = formData.get('phone') as string
-    const address = formData.get('address') as string
-    const location = formData.get('location') as string
-
-    // Validaciones
-    if (!fullName || !email || !username || !password || !phone || !address || !location) {
-      setError('Please fill in all fields')
-      setLoading(false)
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      setLoading(false)
-      return
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
-      setLoading(false)
-      return
-    }
-
-    // Validar foto
-    if (!photoPreview) {
-      setError('Please upload a profile photo')
-      setLoading(false)
-      return
-    }
-
     try {
+      const formData = new FormData(e.currentTarget)
+      const fullName = formData.get('fullname') as string
+      const email = formData.get('email') as string
+      const username = formData.get('username') as string
+      const password = formData.get('password') as string
+      const confirmPassword = formData.get('confirm-password') as string
+      const phone = formData.get('phone') as string
+      const address = formData.get('address') as string
+      const location = formData.get('location') as string
+
+      // Validaciones
+      if (!fullName || !email || !username || !password || !phone || !address || !location) {
+        setError('Please fill in all fields')
+        setLoading(false)
+        return
+      }
+
+      if (password !== confirmPassword) {
+        setError('Passwords do not match')
+        setLoading(false)
+        return
+      }
+
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters')
+        setLoading(false)
+        return
+      }
+
+      // Validar foto
+      if (!photoPreview) {
+        setError('Please upload a profile photo')
+        setLoading(false)
+        return
+      }
+
       // Crear usuario con Supabase Auth
       const { user } = await signUp(email, password, {
         username,
@@ -89,10 +129,23 @@ function SignUp() {
       // Guardar usuario actual en sesión
       localStorage.setItem('cyberloot_current_user', JSON.stringify(user))
 
+      // Resetear loading antes de navegar
+      setLoading(false)
+
       // Redirigir al perfil
       navigate('/profile')
     } catch (err: any) {
-      setError(err.message || 'Error creating account')
+      console.error('Error creating account:', err)
+      // Extraer mensaje de error más específico
+      let errorMessage = 'Error creating account. Please try again.'
+      
+      if (err?.message) {
+        errorMessage = err.message
+      } else if (typeof err === 'string') {
+        errorMessage = err
+      }
+      
+      setError(errorMessage)
       setLoading(false)
     }
   }

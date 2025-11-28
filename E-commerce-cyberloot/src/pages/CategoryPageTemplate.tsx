@@ -20,6 +20,10 @@ const emptyFilters: FilterState = {
 function CategoryPageTemplate({ baseCategory, title, description }: CategoryPageTemplateProps) {
   const [filters, setFilters] = useState<FilterState>(emptyFilters)
 
+  const handleChange = (next: FilterState) => {
+    setFilters(next)
+  }
+
   const handleApply = (next: FilterState) => {
     setFilters(next)
   }
@@ -31,7 +35,7 @@ function CategoryPageTemplate({ baseCategory, title, description }: CategoryPage
 
   return (
     <div className="category-page">
-      <FilterBar values={filters} onApply={handleApply} />
+      <FilterBar values={filters} onChange={handleChange} onApply={handleApply} />
       <div className="category-content">
         <h1>{title}</h1>
         <p>{description}</p>
