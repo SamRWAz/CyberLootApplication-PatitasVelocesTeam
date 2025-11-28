@@ -41,6 +41,19 @@
   transition: border-color 0.2s, background-color 0.2s;
 }
 
+/* Estilos para las opciones del select */
+.filter-select option {
+  background-color: var(--surface-strong);
+  color: var(--text-primary);
+  padding: 0.5rem;
+}
+
+/* Para navegadores que soportan estilos de opciones en el dropdown */
+.filter-select:focus option:checked {
+  background-color: rgba(125, 211, 252, 0.2);
+  color: var(--text-primary);
+}
+
 .filter-select:focus,
 .filter-input:focus {
   outline: none;

@@ -11,15 +11,7 @@ function Navbar() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Obtener usuario actual al cargar
-    getCurrentUser().then(setUser)
-
-    // Escuchar cambios en el estado de autenticación
-    const { data: { subscription } } = onAuthStateChange((user) => {
-      setUser(user)
-    })
-
-    // También verificar localStorage como fallback
+    // Función para actualizar el usuario desde localStorage
     const checkLocalStorage = () => {
       const currentUserJson = localStorage.getItem('cyberloot_current_user')
       if (currentUserJson) {
@@ -28,22 +20,41 @@ function Navbar() {
           setUser(currentUser)
         } catch (e) {
           console.error('Error parsing user data:', e)
+          setUser(null)
         }
+      } else {
+        setUser(null)
       }
     }
 
+    // Obtener usuario actual al cargar
     checkLocalStorage()
 
-    // Escuchar cambios en localStorage
-    const handleStorageChange = () => {
-      checkLocalStorage()
+    // Escuchar cambios en el estado de autenticación de Supabase
+    const { data: { subscription } } = onAuthStateChange((user) => {
+      setUser(user)
+      // Si no hay usuario, limpiar localStorage también
+      if (!user) {
+        localStorage.removeItem('cyberloot_current_user')
+      }
+    })
+
+    // Escuchar cambios en localStorage (para cuando se hace logout o se elimina cuenta)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'cyberloot_current_user') {
+        checkLocalStorage()
+      }
     }
+
+    // También verificar periódicamente (por si acaso)
+    const interval = setInterval(checkLocalStorage, 1000)
 
     window.addEventListener('storage', handleStorageChange)
 
     return () => {
       subscription.unsubscribe()
       window.removeEventListener('storage', handleStorageChange)
+      clearInterval(interval)
     }
   }, [])
 

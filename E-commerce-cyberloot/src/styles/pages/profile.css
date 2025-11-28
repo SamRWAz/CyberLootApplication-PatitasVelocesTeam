@@ -92,6 +92,10 @@
   margin-top: 1rem;
 }
 
+.left-actions button {
+  width: 100%;
+}
+
 .contact-section h2,
 .products-section h2,
 .edit-section h2,

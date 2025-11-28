@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '../slices/hooks'
 import { fetchProducts } from '../slices/ProductSlice'
 import { fetchCommentsByProductId } from '../slices/CommentSlice'
+import { addToCart } from '../slices/CartSlice'
+import { toggleFavorite, checkFavorite } from '../slices/FavoriteSlice'
 import CommentList from '../components/CommentList'
 import '../styles/pages/product.css'
-import { addToCart } from '../models/User'
-import { getFavorites, toggleFavorite } from '../models/User'
 
 function ProductDetail() {
   const { id } = useParams<{ id: string }>()
@@ -14,6 +14,7 @@ function ProductDetail() {
   const dispatch = useAppDispatch()
   const { Products } = useAppSelector((state) => state.products)
   const [isFavorite, setIsFavorite] = useState<boolean>(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   // Buscar producto en Redux
   const product = Products.find(p => p.id === id) as any
@@ -29,14 +30,22 @@ function ProductDetail() {
       dispatch(fetchCommentsByProductId(id))
     }
 
-    // Cargar estado de favorito
+    // Cargar estado de favorito desde la base de datos
     const currentUserJson = localStorage.getItem('cyberloot_current_user')
     if (currentUserJson && id) {
       const currentUser = JSON.parse(currentUserJson) as { id: string }
-      const favs = getFavorites(currentUser.id)
-      setIsFavorite(favs.includes(id))
+      setUserId(currentUser.id)
+      // Verificar si el producto está en favoritos
+      dispatch(checkFavorite({ user_id: currentUser.id, product_id: id }))
+        .then((result) => {
+          setIsFavorite(result.payload !== null)
+        })
+        .catch(() => {
+          setIsFavorite(false)
+        })
     } else {
       setIsFavorite(false)
+      setUserId(null)
     }
   }, [id, dispatch, Products.length])
 
@@ -133,34 +142,40 @@ function ProductDetail() {
               <button className="btn-primary">Contact Seller</button>
               <button 
                 className="btn-primary" 
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.preventDefault()
-                  const currentUserJson = localStorage.getItem('cyberloot_current_user')
-                  if (!currentUserJson) {
+                  if (!userId) {
                     alert('Please log in to add to cart')
                     navigate('/login')
                     return
                   }
-                  const currentUser = JSON.parse(currentUserJson) as { id: string }
-                  addToCart(currentUser.id, product.id, 1)
+                  try {
+                    await dispatch(addToCart({ user_id: userId, product_id: product.id, quantity: 1 })).unwrap()
                     alert('Product added to cart')
+                  } catch (error) {
+                    console.error('Error adding to cart:', error)
+                    alert('Error adding product to cart. Please try again.')
+                  }
                 }}
               >
                 Add to Cart
               </button>
               <button 
                 className="btn-secondary"
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.preventDefault()
-                  const currentUserJson = localStorage.getItem('cyberloot_current_user')
-                  if (!currentUserJson) {
+                  if (!userId) {
                     alert('Please log in to manage favorites')
                     navigate('/login')
                     return
                   }
-                  const currentUser = JSON.parse(currentUserJson) as { id: string }
-                  const next = toggleFavorite(currentUser.id, product.id)
-                  setIsFavorite(next.includes(product.id))
+                  try {
+                    const result = await dispatch(toggleFavorite({ user_id: userId, product_id: product.id })).unwrap()
+                    setIsFavorite(result.isFavorite)
+                  } catch (error) {
+                    console.error('Error toggling favorite:', error)
+                    alert('Error managing favorite. Please try again.')
+                  }
                 }}
                 aria-label="Favorite"
               >

@@ -1,21 +1,15 @@
 import { useEffect, useState, type MouseEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../slices/hooks'
-import { fetchProducts } from '../slices/ProductSlice'
-import { getFavorites } from '../models/User'
+import { fetchFavoritesByUserId } from '../slices/FavoriteSlice'
 
 function Favorites() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { Products } = useAppSelector((state) => state.products)
+  const { Favorites, loading } = useAppSelector((state) => state.favorites)
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    // Cargar productos si no están cargados
-    if (Products.length === 0) {
-      dispatch(fetchProducts())
-    }
-
     const currentUserJson = localStorage.getItem('cyberloot_current_user')
     if (!currentUserJson) {
       navigate('/login')
@@ -23,13 +17,25 @@ function Favorites() {
     }
     const currentUser = JSON.parse(currentUserJson) as { id: string }
     setUserId(currentUser.id)
-  }, [navigate, dispatch, Products.length])
+    
+    // Cargar favoritos desde la base de datos
+    if (currentUser.id) {
+      dispatch(fetchFavoritesByUserId(currentUser.id))
+    }
+  }, [navigate, dispatch])
 
-  // Obtener productos favoritos desde Redux
-  const favIds = userId ? getFavorites(userId) : []
-  const favProducts = Products.filter(p => favIds.includes(p.id)) as any[]
+  // Obtener productos favoritos con datos del producto incluidos
+  const favProducts = Favorites.filter(f => f.product !== undefined).map(f => f.product) as any[]
 
   if (userId === null) return null
+
+  if (loading) {
+    return (
+      <section className="container" style={{ padding: '2.5rem 0' }}>
+        <p style={{ color: 'var(--text-muted)' }}>Loading favorites...</p>
+      </section>
+    )
+  }
 
   return (
     <section className="container" style={{ padding: '2.5rem 0' }}>

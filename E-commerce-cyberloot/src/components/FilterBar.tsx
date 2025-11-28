@@ -39,7 +39,10 @@ function FilterBar({ values, onChange, onApply }: FilterBarProps) {
   const handleChange = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
     const next = { ...local, [key]: value }
     setLocal(next)
-    onChange?.(next)
+    // Llamar a onChange inmediatamente para mantener sincronización
+    if (onChange) {
+      onChange(next)
+    }
   }
 
   const current = local
@@ -53,13 +56,14 @@ function FilterBar({ values, onChange, onApply }: FilterBarProps) {
           className="filter-select"
           value={current.category}
           onChange={(e) => handleChange('category', e.target.value as FilterState['category'])}
+          style={{ color: 'var(--text-primary)' }}
         >
-          <option value="">All Categories</option>
-          <option value="videogames">Videogames</option>
-          <option value="consoles">Consoles</option>
-          <option value="accesories">Accesories</option>
-          <option value="merchandising">Merchandising</option>
-          <option value="components">Components</option>
+          <option value="" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>All Categories</option>
+          <option value="videogames" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Videogames</option>
+          <option value="consoles" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Consoles</option>
+          <option value="accesories" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Accesories</option>
+          <option value="merchandising" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Merchandising</option>
+          <option value="components" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Components</option>
         </select>
       </div>
 
@@ -70,11 +74,12 @@ function FilterBar({ values, onChange, onApply }: FilterBarProps) {
           className="filter-select"
           value={current.condition}
           onChange={(e) => handleChange('condition', e.target.value as FilterState['condition'])}
+          style={{ color: 'var(--text-primary)' }}
         >
-          <option value="">All Conditions</option>
-          <option value="new">New</option>
-          <option value="used">Used</option>
-          <option value="refurbished">Refurbished</option>
+          <option value="" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>All Conditions</option>
+          <option value="new" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>New</option>
+          <option value="used" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Used</option>
+          <option value="refurbished" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Refurbished</option>
         </select>
       </div>
 
@@ -85,12 +90,13 @@ function FilterBar({ values, onChange, onApply }: FilterBarProps) {
           className="filter-select"
           value={current.priceRange}
           onChange={(e) => handleChange('priceRange', e.target.value as FilterState['priceRange'])}
+          style={{ color: 'var(--text-primary)' }}
         >
-          <option value="">All Prices</option>
-          <option value="0-50">$0 - $50</option>
-          <option value="50-100">$50 - $100</option>
-          <option value="100-200">$100 - $200</option>
-          <option value="200+">$200+</option>
+          <option value="" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>All Prices</option>
+          <option value="0-50" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>$0 - $50</option>
+          <option value="50-100" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>$50 - $100</option>
+          <option value="100-200" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>$100 - $200</option>
+          <option value="200+" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>$200+</option>
         </select>
       </div>
 
@@ -113,12 +119,13 @@ function FilterBar({ values, onChange, onApply }: FilterBarProps) {
           className="filter-select"
           value={current.sortBy}
           onChange={(e) => handleChange('sortBy', e.target.value as FilterState['sortBy'])}
+          style={{ color: 'var(--text-primary)' }}
         >
-          <option value="relevance">Relevance</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
+          <option value="relevance" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Relevance</option>
+          <option value="price-low" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Price: Low to High</option>
+          <option value="price-high" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Price: High to Low</option>
+          <option value="newest" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Newest</option>
+          <option value="oldest" style={{ background: 'var(--surface-strong)', color: 'var(--text-primary)' }}>Oldest</option>
         </select>
       </div>
 
