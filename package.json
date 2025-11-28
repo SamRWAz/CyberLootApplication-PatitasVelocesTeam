@@ -1,4 +1,10 @@
 {
+  "name": "cyberloot-application",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd E-commerce-cyberloot && npm install && npm run build",
+    "start": "cd E-commerce-cyberloot && npm run preview"
+  },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.0",
     "axios": "^1.13.2",
